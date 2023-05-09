@@ -1,0 +1,35 @@
+<?php
+    
+    $system_name = "Student Management";
+    $mail_id="codelikhoo@gmail.com";
+    $password="jimapdcykodlxxpy";
+
+    $email=$_REQUEST["q"];
+    $otp = $_REQUEST["otp"];
+    $type = $_REQUEST["type"];
+    $position = $_REQUEST["position"];
+
+    if($type=="otp"){
+        if($position=="principal"){
+            $subject = "OTP for Principal Confirmation";
+            $message = "Dear User, your OTP for signin Confirmation is <b><u> $otp </u></b>";
+        }else if($position=="hod"){
+            $subject = "OTP for HOD Confirmation";
+            $message = "Dear User, your OTP for signin Confirmation is <b><u> $otp </u></b>";
+        }else if($position=="teacher"){
+            $subject = "OTP for Teacher Confirmation";
+            $message = "Dear User, your OTP for signin Confirmation is <b><u> $otp </u></b>";
+        }
+    }else if($type=="thanks"){
+        if($position=="principal"){
+              $subject = "Welcome to ".$system_name." System";
+              $message = "Thank you for registering with us as ".$position.".\n You can now enjoy all the features ".$system_name." ...";
+        }else if($position=="hod"){
+            $subject = "Welcome to ".$system_name." System";
+            $message = "Thank you for registering with us as ".$position.".\n You can now enjoy all the features ".$system_name." ...";
+        } else if($position=="teacher"){
+            $subject = "Welcome to ".$system_name." System";
+            $message = "Thank you for registering with us as ".$position.".\n You can now enjoy all the features ".$system_name." ...";
+        } 
+    }
+?>
