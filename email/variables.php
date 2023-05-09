@@ -19,6 +19,9 @@
         }else if($position=="teacher"){
             $subject = "OTP for Teacher Confirmation";
             $message = "Dear User, your OTP for signin Confirmation is <b><u> $otp </u></b>";
+        }else if($position=="admin"){
+            $subject = "OTP for Admin Confirmation";
+            $message = "Dear User, your OTP for signin Confirmation is <b><u> $otp </u></b>";
         }
     }else if($type=="thanks"){
         if($position=="principal"){
@@ -28,6 +31,9 @@
             $subject = "Welcome to ".$system_name." System";
             $message = "Thank you for registering with us as ".$position.".\n You can now enjoy all the features ".$system_name." ...";
         } else if($position=="teacher"){
+            $subject = "Welcome to ".$system_name." System";
+            $message = "Thank you for registering with us as ".$position.".\n You can now enjoy all the features ".$system_name." ...";
+        }  else if($position=="admin"){
             $subject = "Welcome to ".$system_name." System";
             $message = "Thank you for registering with us as ".$position.".\n You can now enjoy all the features ".$system_name." ...";
         } 

@@ -1,3 +1,7 @@
+<?php
+session_start();
+include('../includes/connection.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,7 +14,7 @@
     <meta name="keywords" content="au theme template">
 
     <!-- Title Page-->
-    <title>Login</title>
+    <title>Admin Login</title>
 
     <!-- Fontfaces CSS-->
     <link href="css/font-face.css" rel="stylesheet" media="all">
@@ -58,24 +62,15 @@
                                 </div>
                                 <div class="login-checkbox">
                                     <label>
-                                        <input type="checkbox" name="remember">Remember Me
-                                    </label>
-                                    <label>
-                                        <a href="#">Forgotten Password?</a>
+                                        <a href="forgot_password">Forgotten Password?</a>
                                     </label>
                                 </div>
-                                <button class="au-btn au-btn--block au-btn--green m-b-20" type="submit">sign in</button>
-                                <div class="social-login-content">
-                                    <div class="social-button">
-                                        <button class="au-btn au-btn--block au-btn--blue m-b-20">sign in with facebook</button>
-                                        <button class="au-btn au-btn--block au-btn--blue2">sign in with twitter</button>
-                                    </div>
-                                </div>
+                                <button name="submit" class="au-btn au-btn--block au-btn--green m-b-20" type="submit">sign in</button>
                             </form>
                             <div class="register-link">
                                 <p>
                                     Don't you have account?
-                                    <a href="#">Sign Up Here</a>
+                                    <a href="register.php">Sign Up Here</a>
                                 </p>
                             </div>
                         </div>
@@ -85,6 +80,28 @@
         </div>
 
     </div>
+
+    
+    <?php
+		if(isset($_POST['submit'])){
+			$user=$_POST['email'];
+			$pass=md5($_POST['password']);
+			$sql="SELECT * FROM `admin_reg` WHERE `email`='".$user."' AND `password`='".$pass."'";
+			$result=mysql_query($sql);
+            $cont=mysql_num_rows($result);
+			if($cont>=1){
+					   echo "<script> alert('Logged in Successfully....'); </script>";
+					   echo "<script> window.location.href='dashboard.php'; </script>";
+					}
+					else{
+						echo "<script> alert('Plese check password and username....'); </script>";
+						echo "<script> window.location.href='index.php'; </script>";
+					}
+			}
+            // Set session variables
+        $_SESSION["user"] = "$user";
+        //echo "Session variables are set.";
+	?>
 
     <!-- Jquery JS-->
     <script src="vendor/jquery-3.2.1.min.js"></script>
