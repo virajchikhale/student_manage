@@ -251,7 +251,7 @@
       $.ajax({
         type:'POST',
         url:'emailvalid.php',
-        data:{email:email},
+		data:{mob:mob,type:'teacher_reg'},
         success:function(return_data) {
           if(return_data == "1"){
             alert('This Email already exist in system');
