@@ -117,7 +117,10 @@ function emailvalid() {
       $.ajax({
         type:'POST',
         url:'../validation/emailvalid.php',
-		data:{email:email,type:'admin_reg'},
+		data:{email:email,
+            type:'reg',
+            table:'admin_reg'
+        },
         success:function(return_data) {
         // alert(return_data);
           if(return_data == "1"){
@@ -224,7 +227,7 @@ function emailvalid() {
             mysql_query($sqlinsert);
             
             echo "<script> alert('Signed Up Successfully....'); </script>";
-            echo "<script> window.location.href='login.php'; </script>";    
+            echo "<script> window.location.href='index.php'; </script>";    
                 
 		}
 

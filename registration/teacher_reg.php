@@ -232,8 +232,11 @@
       //alert(email);
       $.ajax({
         type:'POST',
-        url:'emailvalid.php',
-        data:{email:email,type:'teacher_reg'},
+        url:'../validation/emailvalid.php',
+        data:{email:email,
+			type:'reg',
+			table:'teacher_reg'
+		},
         success:function(return_data) {
           if(return_data == "1"){
             alert('This Email already exist in system');
