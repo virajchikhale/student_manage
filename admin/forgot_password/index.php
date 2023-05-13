@@ -54,7 +54,7 @@ include('../../includes/connection.php');
                             <form action="" method="post">
                                 <div class="form-group">
                                     <label>Email Address</label>
-                                    <input class="au-input au-input--full" type="email" onchange=emailvalid() name="email" placeholder="Email">
+                                    <input class="au-input au-input--full" id="email" type="email" onchange=emailvalid(this.value) name="email" placeholder="Email">
                                 </div>
                                 <div class="form-group"  id="otp">
                                     <input type="text" class="form-control form-control-user" id="otp" onkeyup=otp1() onchange=aaaa() name="otp" required
@@ -125,34 +125,35 @@ function disable() {
 }
 
 
-    function emailvalid() {
-      var email = $('#email').val();
-      //alert(email);
+    function emailvalid(str) {
+    // alert("hii")
+      var email = str;
       $.ajax({
         type:'POST',
         url:'../../validation/emailvalid.php',
 		data:{email:email,
-            table:'admin_reg',
-            type:'forgot'
+            type:'forgot',
+            table:'admin_reg'
         },
         success:function(return_data) {
-          if(return_data == "1"){
-            alert('This Email dose not exist in system.Plese register in system');
-            $('#email').val('');
-            $('#email').focus();
+            alert("return_data");
+        //   if(return_data == "1"){
+        //     alert('This Email dose not exist in system.Plese register in system');
+        //     $('#email').val('');
+        //     $('#email').focus();
            
-          }  else{
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                }
-                xmlhttp.open("GET", "otp_validate.php?q="+str+"&otp="+return_data, true);
-                xmlhttp.send();
-                alert(return_data);
-            alert('We have sent OTP to '+str);
-             var x = document.getElementById("box");
-            x.style.display = "block";
-            otp = return_data;
-          }   
+        //   }  else{
+        //     var xmlhttp = new XMLHttpRequest();
+        //     xmlhttp.onreadystatechange = function() {
+        //         }
+        //         xmlhttp.open("GET", "otp_validate.php?q="+str+"&otp="+return_data, true);
+        //         xmlhttp.send();
+        //         alert(return_data);
+        //     alert('We have sent OTP to '+str);
+        //      var x = document.getElementById("box");
+        //     x.style.display = "block";
+        //     otp = return_data;
+        //   }   
         }
       });
     }
