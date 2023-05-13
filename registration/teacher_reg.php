@@ -246,7 +246,7 @@
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=otp&position=teacher", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=teacher", true);
                 xmlhttp.send();
                 //alert(return_data);
             alert('We have sent OTP to '+str);

@@ -96,7 +96,7 @@
                             <div class="register-link">
                                 <p>
                                     Already have account?
-                                    <a href="login.php">Sign In</a>
+                                    <a href="index.php">Sign In</a>
                                 </p>
                             </div>
                         </div>

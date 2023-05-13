@@ -26,7 +26,7 @@ include('../../includes/connection.php');
     <link href="../vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
 
     <!-- Vendor CSS-->
-    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
+    <link href="../vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
     <link href="../vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
     <link href="../vendor/wow/animate.css" rel="stylesheet" media="all">
     <link href="../vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
@@ -52,12 +52,12 @@ include('../../includes/connection.php');
                         </div>
                         <div class="login-form">
                             <form action="" method="post">
-                                <div class="form-group">
+                                <div class="form-group" id="email_box">
                                     <label>Email Address</label>
                                     <input class="au-input au-input--full" id="email" type="email" onchange=emailvalid(this.value) name="email" placeholder="Email">
                                 </div>
                                 <div class="form-group"  id="otp">
-                                    <input type="text" class="form-control form-control-user" id="otp" onkeyup=otp1() onchange=aaaa() name="otp" required
+                                    <input type="text" class="form-control form-control-user" id="otpin" onkeyup=otp1() onchange=aaaa() name="otp" required
                                     placeholder="Plese enter your OTP">
                                 </div>
                                 <div class="form-group"  id="pass">
@@ -126,9 +126,9 @@ function disable() {
 
 
     function emailvalid(str) {
-    // alert("hii")
       var email = str;
-      $.ajax({
+    //  alert(email)
+    $.ajax({
         type:'POST',
         url:'../../validation/emailvalid.php',
 		data:{email:email,
@@ -136,37 +136,40 @@ function disable() {
             table:'admin_reg'
         },
         success:function(return_data) {
-            alert("return_data");
-        //   if(return_data == "1"){
-        //     alert('This Email dose not exist in system.Plese register in system');
-        //     $('#email').val('');
-        //     $('#email').focus();
-           
-        //   }  else{
-        //     var xmlhttp = new XMLHttpRequest();
-        //     xmlhttp.onreadystatechange = function() {
-        //         }
-        //         xmlhttp.open("GET", "otp_validate.php?q="+str+"&otp="+return_data, true);
-        //         xmlhttp.send();
-        //         alert(return_data);
-        //     alert('We have sent OTP to '+str);
-        //      var x = document.getElementById("box");
-        //     x.style.display = "block";
-        //     otp = return_data;
-        //   }   
+        //alert(return_data);
+          if(return_data == "1"){
+            alert('This Email does not exist in system');
+            $('#email').val('');
+            $('#email').focus();
+          }  else{
+                // alert(return_data);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                }
+                xmlhttp.open("GET", "../../email/email_base.php?q="+email+"&otp="+return_data+"&type=forgot_otp&position=admin", true);
+                xmlhttp.send();
+                // alert(return_data);
+            alert('We have sent OTP to '+email);
+            otp = return_data;
+            
+            var x = document.getElementById("otp");
+            x.style.display = "block";
+			
+			//alert(otp);
+          } 
         }
       });
     }
 
     function otp1() {
-      var raw = $('#otp').val();
+      var raw = $('#otpin').val();
       var otp1 = raw.trim();
       //alert(window.otp);
       //alert(otp1);
       //alert(len);
           if(otp1 == otp){
 
-            var x = document.getElementById("box");
+            var x = document.getElementById("email_box");
             x.style.display = "none";
 
             var y = document.getElementById("pass");
@@ -178,7 +181,7 @@ function disable() {
     }
 
     function aaaa() {
-      var raw = $('#otp').val();
+      var raw = $('#otpin').val();
       var otp1 = raw.trim();
       //alert(window.otp);
       //alert(otp1);
@@ -188,7 +191,7 @@ function disable() {
             $('#otp').val('');
             $('#otp').focus();
           }  else{
-            var x = document.getElementById("box");
+            var x = document.getElementById("email_box");
             x.style.display = "none";
 
             var y = document.getElementById("pass");
@@ -205,31 +208,45 @@ function disable() {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "pass_change.php?q="+email, true);
+                xmlhttp.open("GET", "../../email/email_base.php?q="+email+"&type=pass_change_alert&position=admin", true);
                 xmlhttp.send();
           } 
 </script>
 
 
+<?php
+    
+    include('../../includes/connection.php');
+    if(isset($_POST['submit'])){
+        $user=$_POST['email'];
+        $pass=md5($_POST['pass']);
+        $sql="UPDATE `admin_reg` SET `password`='".$pass."'  WHERE email='".$user."'" ;
+        mysql_query($sql);
+                   echo "<script> alert('Password updated Successfully....'); </script>";
+                   echo "<script> window.location.href='../index.php'; </script>";
+        }
+        // Set session variables
+    //echo "Session variables are set.";
+?>
     <!-- Jquery JS-->
-    <script src="../    vendor/jquery-3.2.1.min.js"></script>
+    <script src="../vendor/jquery-3.2.1.min.js"></script>
     <!-- Bootstrap JS-->
-    <script src="../    vendor/bootstrap-4.1/popper.min.js"></script>
-    <script src="../    vendor/bootstrap-4.1/bootstrap.min.js"></script>
+    <script src="../vendor/bootstrap-4.1/popper.min.js"></script>
+    <script src="../vendor/bootstrap-4.1/bootstrap.min.js"></script>
     <!-- Vendor JS       -->
-    <script src="../    vendor/slick/slick.min.js">
+    <script src="../vendor/slick/slick.min.js">
     </script>
-    <script src="../    vendor/wow/wow.min.js"></script>
-    <script src="../    vendor/animsition/animsition.min.js"></script>
-    <script src="../    vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
+    <script src="../vendor/wow/wow.min.js"></script>
+    <script src="../vendor/animsition/animsition.min.js"></script>
+    <script src="../vendor/bootstrap-progressbar/bootstrap-progressbar.min.js">
     </script>
-    <script src="../    vendor/counter-up/jquery.waypoints.min.js"></script>
-    <script src="../    vendor/counter-up/jquery.counterup.min.js">
+    <script src="../vendor/counter-up/jquery.waypoints.min.js"></script>
+    <script src="../vendor/counter-up/jquery.counterup.min.js">
     </script>
-    <script src="../    vendor/circle-progress/circle-progress.min.js"></script>
-    <script src="../    vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../    vendor/chartjs/Chart.bundle.min.js"></script>
-    <script src="../    vendor/select2/select2.min.js">
+    <script src="../vendor/circle-progress/circle-progress.min.js"></script>
+    <script src="../vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../vendor/chartjs/Chart.bundle.min.js"></script>
+    <script src="../vendor/select2/select2.min.js">
     </script>
 
     <!-- Main JS-->
