@@ -19,22 +19,22 @@
 </head>
 <?php
 		include("../includes/connection.php");
-		if(isset($_POST['submit'])){
-		$fname=$_POST['fname'];
-		$lname=$_POST['lname'];
-		$email=$_POST['email'];
-		$phoneno=$_POST['phoneno'];
-		$password=md5($_POST['password']);
-		$cpassword=$_POST['cpassword'];
+		// if(isset($_POST['submit'])){
+		// $fname=$_POST['fname'];
+		// $lname=$_POST['lname'];
+		// $email=$_POST['email'];
+		// $phoneno=$_POST['phoneno'];
+		// $password=md5($_POST['password']);
+		// $cpassword=$_POST['cpassword'];
 
-		$sqlinsert="insert into principal_reg(first_name, last_name, email,phone,password) 
-		values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."')";
-		mysql_query($sqlinsert);
-		//echo $sqlinsert;
-		echo "<script> alert('Signed Up Successfully....'); </script>";
-		echo "<script> window.location.href='index.php'; </script>";
+		// $sqlinsert="insert into principal_reg(first_name, last_name, email,phone,password) 
+		// values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."')";
+		// mysql_query($sqlinsert);
+		// //echo $sqlinsert;
+		// echo "<script> alert('Signed Up Successfully....'); </script>";
+		// echo "<script> window.location.href='index.php'; </script>";
                                         
-		}
+		// }
 	?>
 <body onload="disable()">
 	<div class="page-content">
@@ -143,7 +143,7 @@
 								</div>
 								<div class="form-row">
 									<div class="form-button form-button-2 text-right">
-										<button type="Submit" class="btn btn-primary btn-user btn-block" onclick=response() id="submit" name="submit" >Register</button>
+										<button type="Button" class="btn btn-primary btn-user btn-block" onclick=response() id="submit" name="submit" >Register</button>
 									</div>
 								</div>
 							</div>
@@ -155,22 +155,22 @@
 	</div>
 	<!--mobile number validation -->
     <script> 
-		function checkmobno() {
-		  var mob = $('#phoneno').val();
-		  //alert(mob);
-		  $.ajax({
-			type:'POST',
-			url:'checkmob.php',
-			data:{mob:mob},
-			success:function(return_data) {
-			  if(return_data == 1){
-				alert('This Number already exist in system');
-				$('#phoneno').val('');
-				$('#phoneno').focus();
-			  }   //	alert(return_data);      
-			}
-		  });
+	function checkmobno() {
+		var mob = $('#phoneno').val();
+		//alert(mob);
+		$.ajax({
+		type:'POST',
+		url:'../validation/checkmob.php',
+		data:{mob:mob},
+		success:function(return_data) {
+			if(return_data == 1){
+			alert('This Number already exist in system');
+			$('#phoneno').val('');
+			$('#phoneno').focus();
+			}   //	alert(return_data);      
 		}
+		});
+	}
 
 
   //<!--password length validation -->
@@ -219,7 +219,7 @@
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=teacher", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=principal", true);
                 xmlhttp.send();
                 //alert(return_data);
             alert('We have sent OTP to '+str);
@@ -284,18 +284,45 @@
     var x = document.getElementById("submit");
     x.style.display = "none";
 
-}
+	}
 
 
-function response() {
+	function response() {
         
+        var fname = $('#fname').val();
+        var lname = $('#lname').val();
         var email = $('#email').val();
+        var phoneno = $('#phoneno').val();
+        var password = $('#password').val();
+		var	table="principal_reg";
+
+		//alert(fname);
+		$.ajax({
+        type:'POST',
+        url:'../sqloperations/insert_reg.php',
+        data:{fname:fname,
+			lname:lname,
+			email:email,
+			phoneno:phoneno,
+			password:password,
+			table:table
+		},
+        success:function(return_data) {
+			//alert(return_data);
+          if(return_data == "1"){
+            alert('Someting went wrong!!!');
+          }  else{
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
                 xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=principal", true);
                 xmlhttp.send();
-          } 
+				alert('Signed Up Successfully....');
+				window.location.href='index.php';
+			}
+	} 
+      });
+	}
 
   </script>
 	<script src="../includes/js/jquery-3.3.1.min.js"></script>

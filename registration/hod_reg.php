@@ -19,25 +19,6 @@
 </head>
 <?php
 		include("../includes/connection.php");
-		if(isset($_POST['submit'])){
-		$fname=$_POST['fname'];
-		$lname=$_POST['lname'];
-		$email=$_POST['email'];
-		$phoneno=$_POST['phoneno'];
-		$password=md5($_POST['password']);
-		$report_to=$_POST['report_to'];
-		$department=$_POST['department'];
-
-		$sqlinsert="insert into hod_reg(first_name, last_name, email,phone,password,report_to,department_id) 
-		values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."', '".$department."')";
-		mysql_query($sqlinsert);
-		$sql="update department set status='1' where id='".$department."'";
-		mysql_query($sql);
-		// echo $sql;
-		echo "<script> alert('Signed Up Successfully....'); </script>";
-		echo "<script> window.location.href='index.php'; </script>";
-                                        
-		}
 	?>
 <body onload="disable()">
 	<div class="page-content">
@@ -185,7 +166,7 @@
 		  //alert(mob);
 		  $.ajax({
 			type:'POST',
-			url:'checkmob.php',
+			url:'../validation/checkmob.php',
 			data:{mob:mob},
 			success:function(return_data) {
 			  if(return_data == 1){
@@ -244,7 +225,7 @@
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=teacher", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=hod", true);
                 xmlhttp.send();
                 //alert(return_data);
             alert('We have sent OTP to '+str);
@@ -292,18 +273,51 @@
     var x = document.getElementById("submit");
     x.style.display = "none";
 
-}
+	}
 
 
 function response() {
+
+	
+	var fname = $('#fname').val();
+	var lname = $('#lname').val();
+	var email = $('#email').val();
+	var phoneno = $('#phoneno').val();
+	var password = $('#password').val();
+	var department = $('#department').val();
+	var report_to = $('#report_to').val();
+	var	table='hod_reg';
         
-        var email = $('#email').val();
+	
+	$.ajax({
+        type:'POST',
+        url:'../sqloperations/insert_reg.php',
+        data:{fname:fname,
+			lname:lname,
+			email:email,
+			phoneno:phoneno,
+			password:password,
+			department:department,
+			report_to:report_to,
+			table:table
+		},
+        success:function(return_data) {
+			//alert(return_data);
+          if(return_data == "1"){
+            alert('Someting went wrong!!!');
+          }  else{
+
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=principal", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=hod", true);
                 xmlhttp.send();
+				alert('Signed Up Successfully....');
+				window.location.href='index.php';
           } 
+        }
+      });
+	}
 
   </script>
 	<script src="../includes/js/jquery-3.3.1.min.js"></script>

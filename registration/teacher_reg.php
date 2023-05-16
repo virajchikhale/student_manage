@@ -18,28 +18,7 @@
 		</style>
 </head>
 <?php
-		include("../includes/connection.php");
-		if(isset($_POST['submit'])){
-		$fname=$_POST['fname'];
-		$lname=$_POST['lname'];
-		$email=$_POST['email'];
-		$phoneno=$_POST['phoneno'];
-		$password=md5($_POST['password']);
-		$cpassword=$_POST['cpassword'];
-		$report_to=$_POST['report_to'];
-		$department=$_POST['department'];
-
-                          $sqlinsert="insert into teacher_reg(first_name, last_name, email,phone,password,report_to,department_id) 
-                          values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."', '".$department."')";
-                          mysql_query($sqlinsert);
-                          //echo $sqlinsert;
-                          echo "<script> alert('Signed Up Successfully....'); </script>";
-                          echo "<script> window.location.href='index.php'; </script>";
-                        
-                        
-                 
-                
-		}
+		include("../includes/connection.php");   
 	?>
 <body onload="disable()">
 	<div class="page-content">
@@ -114,7 +93,7 @@
 			            <section>
 			                <div class="inner">
 			                	<div class="wizard-header">
-									<h3 class="heading">Adderss Information</h3>
+									<h3 class="heading">Select Department</h3>
 									<p>Please enter your infomation and proceed to the next step so we can build your accounts.</p>
 								</div>
 								<div class="form-row">
@@ -128,21 +107,6 @@
 											while($row = mysql_fetch_array($res))
 													{ ?>
 												<option value="<?php echo $row['id']; ?>"><?php echo $row['name'];?></option>
-											<?php $i++;} ?> 
-										</select>
-									</div>
-								</div>
-								<div class="form-row">
-									<div class="form-holder form-holder-1">
-										<label for="state">Report</label>
-										<select class="form-control" id="report_to" name="report_to" onchange=selectnone(this.id)>
-										<option value="none">Select Reporting</option>
-										<?php
-											$res = mysql_query("select * from hod_reg");
-											$i = 1;
-											while($row = mysql_fetch_array($res))
-													{ ?>
-												<option value="<?php echo $row['id']; ?>"><?php echo $row['first_name']." ".$row['first_name']; ?></option>
 											<?php $i++;} ?> 
 										</select>
 									</div>
@@ -170,7 +134,7 @@
 								</div>
 								<div class="form-row">
 									<div class="form-button form-button-2 text-right">
-										<button type="Submit" class="btn btn-primary btn-user btn-block" onclick=response() id="submit" name="submit" >Register</button>
+										<button type="Button" class="btn btn-primary btn-user btn-block" onclick=response() id="submit" name="submit" >Register</button>
 									</div>
 								</div>
 							</div>
@@ -182,22 +146,22 @@
 	</div>
 	<!--mobile number validation -->
     <script> 
-		function checkmobno() {
-		  var mob = $('#phoneno').val();
-		  //alert(mob);
-		  $.ajax({
-			type:'POST',
-			url:'checkmob.php',
-			data:{mob:mob,type:'teacher_reg'},
-			success:function(return_data) {
-			  if(return_data == 1){
-				alert('This Number already exist in system');
-				$('#phoneno').val('');
-				$('#phoneno').focus();
-			  }   //	alert(return_data);      
-			}
-		  });
+	function checkmobno() {
+		var mob = $('#phoneno').val();
+		//alert(mob);
+		$.ajax({
+		type:'POST',
+		url:'../validation/checkmob.php',
+		data:{mob:mob,type:'teacher_reg'},
+		success:function(return_data) {
+			if(return_data == 1){
+			alert('This Number already exist in system');
+			$('#phoneno').val('');
+			$('#phoneno').focus();
+			}   //	alert(return_data);      
 		}
+		});
+	}
 
 
   //<!--password length validation -->
@@ -292,18 +256,47 @@
     var x = document.getElementById("submit");
     x.style.display = "none";
 
-}
+	}
 
 
-function response() {
-        
+	function response() {
+        var fname = $('#fname').val();
+        var lname = $('#lname').val();
         var email = $('#email').val();
+        var phoneno = $('#phoneno').val();
+        var password = $('#password').val();
+        var department = $('#department').val();
+        var report_to = $('#report_to').val();
+		var	table='teacher_reg';
+		
+		$.ajax({
+        type:'POST',
+        url:'../sqloperations/insert_reg.php',
+        data:{fname:fname,
+			lname:lname,
+			email:email,
+			phoneno:phoneno,
+			password:password,
+			department:department,
+			report_to:report_to,
+			table:table
+		},
+        success:function(return_data) {
+			alert(return_data);
+          if(return_data == "1"){
+            alert('Someting went wrong!!!');
+          }  else{
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
                 xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=teacher", true);
-                xmlhttp.send();
+                xmlhttp.send(); 
+				alert('Signed Up Successfully....');
+				window.location.href='index.php';
           } 
+        }
+      });
+	}
 
   </script>
 	<script src="../includes/js/jquery-3.3.1.min.js"></script>
