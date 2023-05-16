@@ -25,19 +25,15 @@
 		$email=$_POST['email'];
 		$phoneno=$_POST['phoneno'];
 		$password=md5($_POST['password']);
-		$cpassword=$_POST['cpassword'];
 		$report_to=$_POST['report_to'];
 
-                          $sqlinsert="insert into hod_reg(first_name, last_name, email,phone,password,report_to) 
-                          values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."')";
-                          mysql_query($sqlinsert);
-                          //echo $sqlinsert;
-                          echo "<script> alert('Signed Up Successfully....'); </script>";
-                          echo "<script> window.location.href='index.php'; </script>";
-                        
-                        
+		$sqlinsert="insert into hod_reg(first_name, last_name, email,phone,password,report_to) 
+		values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."')";
+		mysql_query($sqlinsert);
+		//echo $sqlinsert;
+		echo "<script> alert('Signed Up Successfully....'); </script>";
+		echo "<script> window.location.href='index.php'; </script>";
                  
-                
 		}
 	?>
 <body onload="disable()">

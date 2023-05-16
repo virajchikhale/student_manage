@@ -1,3 +1,11 @@
+<?php
+// Start the session
+session_start();
+if($_SESSION["user"]==""){
+  echo "<script> alert('Please login....');</script>";
+  echo '<script>window.location.href="index.php";</script>';
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -36,6 +44,27 @@
 
 </head>
 
+
+<?php
+			include ('../includes/connection.php');	
+			$ur = mysql_fetch_array(mysql_query("select * from admin_reg where email='".$_SESSION["user"]."'"));
+            $sql1="select * from admin_reg";
+            $sql2="select * from principal_reg";
+            $sql3="select * from hod_reg";
+            $sql4="select * from teacher_reg";
+            $sql5="select * from department";
+            $result1=mysql_query($sql1);
+            $result2=mysql_query($sql2);
+            $result3=mysql_query($sql3);
+            $result4=mysql_query($sql4);
+            $result5=mysql_query($sql5);
+            $admin=mysql_num_rows($result1);
+            $principal=mysql_num_rows($result2);
+            $hod=mysql_num_rows($result3);
+            $teacher=mysql_num_rows($result4);
+            $department=mysql_num_rows($result5);
+            ?>
+
 <body class="animsition">
     <div class="page-wrapper">
         <!-- MENU SIDEBAR-->
@@ -71,8 +100,8 @@
                                             <li class="list-inline-item">Dashboard</li>
                                         </ul>
                                     </div>
-                                    <button class="au-btn au-btn-icon au-btn--green">
-                                        <i class="zmdi zmdi-plus"></i>add item</button>
+                                    <!-- <button class="au-btn au-btn-icon au-btn--green">
+                                        <i class="zmdi zmdi-plus"></i>add item</button> -->
                                 </div>
                             </div>
                         </div>
@@ -88,8 +117,8 @@
                         <div class="row">
                             <div class="col-md-6 col-lg-3">
                                 <div class="statistic__item">
-                                    <h2 class="number">10,368</h2>
-                                    <span class="desc">members online</span>
+                                    <h2 class="number"><?php echo $principal;?></h2>
+                                    <span class="desc">Principal's in System</span>
                                     <div class="icon">
                                         <i class="zmdi zmdi-account-o"></i>
                                     </div>
@@ -97,8 +126,8 @@
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="statistic__item">
-                                    <h2 class="number">388,688</h2>
-                                    <span class="desc">items sold</span>
+                                    <h2 class="number"><?php echo $hod;?></h2>
+                                    <span class="desc">HOD's in System</span>
                                     <div class="icon">
                                         <i class="zmdi zmdi-shopping-cart"></i>
                                     </div>
@@ -106,8 +135,8 @@
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="statistic__item">
-                                    <h2 class="number">1,086</h2>
-                                    <span class="desc">this week</span>
+                                    <h2 class="number"><?php echo $teacher;?></h2>
+                                    <span class="desc">Teacher's in System</span>
                                     <div class="icon">
                                         <i class="zmdi zmdi-calendar-note"></i>
                                     </div>
@@ -115,8 +144,8 @@
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="statistic__item">
-                                    <h2 class="number">$1,060,386</h2>
-                                    <span class="desc">total earnings</span>
+                                    <h2 class="number"><?php echo $department;?></h2>
+                                    <span class="desc">Department's in System</span>
                                     <div class="icon">
                                         <i class="zmdi zmdi-money"></i>
                                     </div>

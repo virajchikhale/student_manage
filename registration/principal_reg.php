@@ -53,7 +53,7 @@
 			            <section>
 			                <div class="inner">
 			                	<div class="wizard-header">
-									<h3 class="heading">Peronal Infomation of Farmer</h3>
+									<h3 class="heading">Peronal Infomation of Pricipal</h3>
 									<p>Please enter your infomation and proceed to the next step so we can build your accounts.  </p>
 								</div>
 								<div class="form-row">
@@ -107,63 +107,21 @@
 						<!-- SECTION 2 -->
 			            <h2>
 			            	<p class="step-icon"><span>02</span></p>
-			            	<span class="step-text">Adderss Information</span>
+			            	<span class="step-text">Admin Verification</span>
 			            </h2>
 			            <section>
 			                <div class="inner">
 			                	<div class="wizard-header">
-									<h3 class="heading">Adderss Information</h3>
-									<p>Please enter your infomation and proceed to the next step so we can build your accounts.</p>
+									<h3 class="heading">Admin Verification</h3>
+									<p>Please enter the code which is provied to you by the admin.</p>
 								</div>
 								<div class="form-row">
-									<div class="form-holder form-holder-1">
-										<textarea  class="form-control" id="adderss" name="adderss" placeholder="Enter your Adderss" rows="4" cols="50" required></textarea>
+									<div class="form-holder form-holder-2">
+										<fieldset>
+											<legend>Verification Code</legend>
+											<input type="text" class="form-control" onchange=code_valid(this.value) id="code" name="code" placeholder="Enter your code" required>
+										</fieldset>
 									</div>
-								</div>
-								<div class="form-row">
-									<div class="form-holder form-holder-1">
-								<label for="state">State</label>
-								<select class="form-control" id="state" name="state" required>
-									<option disabled selected>Select your State</option>
-									<option>Arunachal Pradesh</option>
-									<option>Assam</option>
-									<option>Bihar</option>
-									<option>Chhattisgarh</option>
-									<option>Goa</option>
-									<option>Gujarat</option>
-									<option>Haryana</option>
-									<option>Himachal Pradesh</option>
-									<option>Jharkhand</option>
-									<option>Karnataka</option>
-									<option>Kerala</option>
-									<option>Madhya Pradesh</option>
-									<option>Maharashtra</option>
-									<option>Manipur</option>
-									<option>Meghalaya</option>
-									<option>Mizoram</option>
-									<option>Nagaland</option>
-									<option>Odisha</option>
-									<option>Punjab</option>
-									<option>Rajasthan</option>
-									<option>Sikkim</option>
-									<option>Tamil Nadu</option>
-									<option>Telangana</option>
-									<option>Tripura</option>
-									<option>Uttar Pradesh</option>
-									<option>Uttarakhand</option>
-									<option>West Bengal</option>
-
-									<option>Andaman and Nicobar Islands</option>
-									<option>Chandigarh</option>
-									<option>Dadra & Nagar Haveli and Daman & Diu</option>
-									<option>Delhi</option>
-									<option>Jammu and Kashmir</option>
-									<option>Lakshadweep</option>
-									<option>Puducherry</option>
-									<option>Ladakh</option>
-
-								</select>
-								</div>
 								</div>
 							</div>
 			            </section>
@@ -272,6 +230,25 @@
 			
 			//alert(otp);
           }   
+        }
+      });
+    }
+
+	
+	function code_valid(str) {
+      //alert(str);
+      $.ajax({
+        type:'POST',
+        url:'../validation/codevalid.php',
+        data:{code:str
+		},
+        success:function(return_data) {
+			//alert(return_data);
+          if(return_data == "1"){
+            alert('Please enter vaild Admin code.');
+            $('#code').val('');
+            $('#code').focus();
+          } 
         }
       });
     }
