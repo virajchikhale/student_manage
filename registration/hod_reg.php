@@ -26,14 +26,17 @@
 		$phoneno=$_POST['phoneno'];
 		$password=md5($_POST['password']);
 		$report_to=$_POST['report_to'];
+		$department=$_POST['department'];
 
-		$sqlinsert="insert into hod_reg(first_name, last_name, email,phone,password,report_to) 
-		values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."')";
+		$sqlinsert="insert into hod_reg(first_name, last_name, email,phone,password,report_to,department_id) 
+		values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."', '".$department."')";
 		mysql_query($sqlinsert);
-		//echo $sqlinsert;
+		$sql="update department set status='1' where id='".$department."'";
+		mysql_query($sql);
+		// echo $sql;
 		echo "<script> alert('Signed Up Successfully....'); </script>";
 		echo "<script> window.location.href='index.php'; </script>";
-                 
+                                        
 		}
 	?>
 <body onload="disable()">
@@ -104,33 +107,43 @@
 						<!-- SECTION 2 -->
 			            <h2>
 			            	<p class="step-icon"><span>02</span></p>
-			            	<span class="step-text">Adderss Information</span>
+			            	<span class="step-text">Admin Verification</span>
 			            </h2>
 			            <section>
 			                <div class="inner">
 			                	<div class="wizard-header">
-									<h3 class="heading">Adderss Information</h3>
-									<p>Please enter your infomation and proceed to the next step so we can build your accounts.</p>
+									<h3 class="heading">Admin Verification</h3>
+									<p>Please enter the code which is provied to you by the admin.</p>
 								</div>
 								<div class="form-row">
 									<div class="form-holder form-holder-1">
-										<textarea  class="form-control" id="adderss" name="adderss" placeholder="Enter your Adderss" rows="4" cols="50" required></textarea>
+										<label for="state">Department</label>
+										<select class="form-control" id="department" name="department" onchange=selectnone(this.id)>
+										<option value="none">Select Department</option>
+										<?php
+											$resu = mysql_query("select * from department where status='0'");
+											$i = 1;
+											while($row = mysql_fetch_array($resu))
+													{ ?>
+												<option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
+											<?php $i++;} ?> 
+										</select>
 									</div>
 								</div>
 								<div class="form-row">
 									<div class="form-holder form-holder-1">
-								<label for="state">State</label>
-								<select class="form-control" id="report_to" name="report_to" onchange=selectnone(this.id)>
-								<option value="none">Select Reporting</option>
-								<?php
-									$res = mysql_query("select * from principal_reg");
-									$i = 1;
-									while($row = mysql_fetch_array($res))
-											{ ?>
-										<option value="<?php echo $row['id']; ?>"><?php echo $row['first_name']; ?></option>
-									<?php $i++;} ?> 
-								</select>
-								</div>
+										<label for="state">Reporting</label>
+										<select class="form-control" id="report_to" name="report_to" onchange=selectnone(this.id)>
+										<option value="none">Select Reporting</option>
+										<?php
+											$resu = mysql_query("select * from principal_reg");
+											$i = 1;
+											while($row = mysql_fetch_array($resu))
+													{ ?>
+												<option value="<?php echo $row['id']; ?>"><?php echo $row['first_name']; ?></option>
+											<?php $i++;} ?> 
+										</select>
+									</div>
 								</div>
 							</div>
 			            </section>
@@ -173,7 +186,7 @@
 		  $.ajax({
 			type:'POST',
 			url:'checkmob.php',
-			data:{mob:mob,type:'hod_reg'},
+			data:{mob:mob},
 			success:function(return_data) {
 			  if(return_data == 1){
 				alert('This Number already exist in system');
@@ -231,7 +244,7 @@
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=hod", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=teacher", true);
                 xmlhttp.send();
                 //alert(return_data);
             alert('We have sent OTP to '+str);
@@ -242,6 +255,8 @@
         }
       });
     }
+
+	
 
 	function otp() {
       var raw = $('#otp').val();
@@ -286,7 +301,7 @@ function response() {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=hod", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=principal", true);
                 xmlhttp.send();
           } 
 
@@ -295,3 +310,4 @@ function response() {
 	<script src="../includes/js/jquery.steps.js"></script>
 	<script src="../includes/js/main_steps.js"></script>
 </body>
+</html>

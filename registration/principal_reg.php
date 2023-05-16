@@ -27,16 +27,13 @@
 		$password=md5($_POST['password']);
 		$cpassword=$_POST['cpassword'];
 
-                          $sqlinsert="insert into principal_reg(first_name, last_name, email,phone,password) 
-                          values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."')";
-                          mysql_query($sqlinsert);
-                          //echo $sqlinsert;
-                          echo "<script> alert('Signed Up Successfully....'); </script>";
-                          echo "<script> window.location.href='index.php'; </script>";
-                        
-                        
-                 
-                
+		$sqlinsert="insert into principal_reg(first_name, last_name, email,phone,password) 
+		values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."')";
+		mysql_query($sqlinsert);
+		//echo $sqlinsert;
+		echo "<script> alert('Signed Up Successfully....'); </script>";
+		echo "<script> window.location.href='index.php'; </script>";
+                                        
 		}
 	?>
 <body onload="disable()">
@@ -296,7 +293,7 @@ function response() {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=teacher", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=principal", true);
                 xmlhttp.send();
           } 
 
@@ -305,3 +302,4 @@ function response() {
 	<script src="../includes/js/jquery.steps.js"></script>
 	<script src="../includes/js/main_steps.js"></script>
 </body>
+</html>
