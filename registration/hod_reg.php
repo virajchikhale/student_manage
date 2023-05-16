@@ -137,7 +137,7 @@
 			            <!-- SECTION 3 -->
 			            <h2>
 			            	<p class="step-icon"><span>03</span></p>
-			            	<span class="step-text">OTP Verifictio</span>
+			            	<span class="step-text">OTP Verifiction</span>
 			            </h2>
 			            <section>
 			                <div class="inner">
