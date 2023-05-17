@@ -144,7 +144,8 @@
 			</div>
 		</div>
 	</div>
-	<!--mobile number validation -->
+
+	
     <script> 
 	function checkmobno() {
 		var mob = $('#phoneno').val();
@@ -161,34 +162,6 @@
 			}   //	alert(return_data);      
 		}
 		});
-	}
-
-
-  //<!--password length validation -->
-	function passvalid() {
-	  var pass = $('#password').val();
-	  
-	  //alert(pass.length);
-	  var len = pass.length;
-	  //alert(len);
-		  if(len < 8){
-			alert('Password must be atleast of 8 charechters');
-			$('#password').val('');
-			$('#password').focus();
-		  }  
-	}
-
-
-//<!--password length validation -->
-	function passcon() {
-	  var pass = $('#password').val();
-	  var cpass = $('#cpassword').val();
-	 
-		  if(pass != cpass){
-			alert('Password Mismatched please try agian');
-			$('#cpassword').val('');
-			$('#cpassword').focus();
-		  }  
 	}
 
 	function emailvalid(str) {
@@ -221,43 +194,6 @@
         }
       });
     }
-
-	function otp() {
-      var raw = $('#otp').val();
-      var otp1 = raw.trim();
-      //alert(window.otp);
-      //alert(otp1);
-      //alert(len);
-          if(otp1 !== otp){
-            alert('Plese enter valid OTP');
-            $('#otp').val('');
-            $('#otp').focus();
-          }  
-    }
-
-
-	function otp1() {
-      var raw = $('#otp').val();
-      var otp1 = raw.trim();
-      //alert(window.otp);
-      //alert(otp1);
-      //alert(len);
-          if(otp1 == otp){
-
-            var y = document.getElementById("submit");
-            y.style.display = "block";
-
-          }
-    }
-
-
-	function disable() {
-    
-    var x = document.getElementById("submit");
-    x.style.display = "none";
-
-	}
-
 
 	function response() {
         var fname = $('#fname').val();
@@ -298,8 +234,9 @@
       });
 	}
 
-  </script>
+	</script>
 	<script src="../includes/js/jquery-3.3.1.min.js"></script>
 	<script src="../includes/js/jquery.steps.js"></script>
 	<script src="../includes/js/main_steps.js"></script>
+	<script src="../includes/js/validation.js"></script>
 </body>

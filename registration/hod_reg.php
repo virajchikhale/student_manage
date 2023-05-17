@@ -149,7 +149,7 @@
 								</div>
 								<div class="form-row">
 									<div class="form-button form-button-2 text-right">
-										<button type="Submit" class="btn btn-primary btn-user btn-block" onclick=response() id="submit" name="submit" >Register</button>
+										<button type="Button" class="btn btn-primary btn-user btn-block" onclick=response() id="submit" name="submit" >Register</button>
 									</div>
 								</div>
 							</div>
@@ -161,49 +161,22 @@
 	</div>
 	<!--mobile number validation -->
     <script> 
-		function checkmobno() {
-		  var mob = $('#phoneno').val();
-		  //alert(mob);
-		  $.ajax({
-			type:'POST',
-			url:'../validation/checkmob.php',
-			data:{mob:mob},
-			success:function(return_data) {
-			  if(return_data == 1){
-				alert('This Number already exist in system');
-				$('#phoneno').val('');
-				$('#phoneno').focus();
-			  }   //	alert(return_data);      
-			}
-		  });
+
+	function checkmobno() {
+		var mob = $('#phoneno').val();
+		//alert(mob);
+		$.ajax({
+		type:'POST',
+		url:'../validation/checkmob.php',
+		data:{mob:mob,table:'hod_reg'},
+		success:function(return_data) {
+			if(return_data == 1){
+			alert('This Number already exist in system');
+			$('#phoneno').val('');
+			$('#phoneno').focus();
+			}   //	alert(return_data);      
 		}
-
-
-  //<!--password length validation -->
-	function passvalid() {
-	  var pass = $('#password').val();
-	  
-	  //alert(pass.length);
-	  var len = pass.length;
-	  //alert(len);
-		  if(len < 8){
-			alert('Password must be atleast of 8 charechters');
-			$('#password').val('');
-			$('#password').focus();
-		  }  
-	}
-
-
-//<!--password length validation -->
-	function passcon() {
-	  var pass = $('#password').val();
-	  var cpass = $('#cpassword').val();
-	 
-		  if(pass != cpass){
-			alert('Password Mismatched please try agian');
-			$('#cpassword').val('');
-			$('#cpassword').focus();
-		  }  
+		});
 	}
 
 	function emailvalid(str) {
@@ -237,91 +210,53 @@
       });
     }
 
-	
+	function response() {
 
-	function otp() {
-      var raw = $('#otp').val();
-      var otp1 = raw.trim();
-      //alert(window.otp);
-      //alert(otp1);
-      //alert(len);
-          if(otp1 !== otp){
-            alert('Plese enter valid OTP');
-            $('#otp').val('');
-            $('#otp').focus();
-          }  
-    }
+		
+		var fname = $('#fname').val();
+		var lname = $('#lname').val();
+		var email = $('#email').val();
+		var phoneno = $('#phoneno').val();
+		var password = $('#password').val();
+		var department = $('#department').val();
+		var report_to = $('#report_to').val();
+		var	table='hod_reg';
+			
+		
+		$.ajax({
+			type:'POST',
+			url:'../sqloperations/insert_reg.php',
+			data:{fname:fname,
+				lname:lname,
+				email:email,
+				phoneno:phoneno,
+				password:password,
+				department:department,
+				report_to:report_to,
+				table:table
+			},
+			success:function(return_data) {
+				//alert(return_data);
+			if(return_data == "1"){
+				alert('Someting went wrong!!!');
+			}  else{
 
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					}
+					xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=hod", true);
+					xmlhttp.send();
+					alert('Signed Up Successfully....');
+					window.location.href='index.php';
+			} 
+			}
+		});
+		}
 
-	function otp1() {
-      var raw = $('#otp').val();
-      var otp1 = raw.trim();
-      //alert(window.otp);
-      //alert(otp1);
-      //alert(len);
-          if(otp1 == otp){
-
-            var y = document.getElementById("submit");
-            y.style.display = "block";
-
-          }
-    }
-
-
-	function disable() {
-    
-    var x = document.getElementById("submit");
-    x.style.display = "none";
-
-	}
-
-
-function response() {
-
-	
-	var fname = $('#fname').val();
-	var lname = $('#lname').val();
-	var email = $('#email').val();
-	var phoneno = $('#phoneno').val();
-	var password = $('#password').val();
-	var department = $('#department').val();
-	var report_to = $('#report_to').val();
-	var	table='hod_reg';
-        
-	
-	$.ajax({
-        type:'POST',
-        url:'../sqloperations/insert_reg.php',
-        data:{fname:fname,
-			lname:lname,
-			email:email,
-			phoneno:phoneno,
-			password:password,
-			department:department,
-			report_to:report_to,
-			table:table
-		},
-        success:function(return_data) {
-			//alert(return_data);
-          if(return_data == "1"){
-            alert('Someting went wrong!!!');
-          }  else{
-
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                }
-                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=hod", true);
-                xmlhttp.send();
-				alert('Signed Up Successfully....');
-				window.location.href='index.php';
-          } 
-        }
-      });
-	}
-
-  </script>
+	</script>
 	<script src="../includes/js/jquery-3.3.1.min.js"></script>
 	<script src="../includes/js/jquery.steps.js"></script>
 	<script src="../includes/js/main_steps.js"></script>
+	<script src="../includes/js/validation.js"></script>
 </body>
 </html>
