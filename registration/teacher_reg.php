@@ -145,7 +145,7 @@
 		</div>
 	</div>
 
-	
+
     <script> 
 	function checkmobno() {
 		var mob = $('#phoneno').val();
@@ -218,7 +218,7 @@
 			table:table
 		},
         success:function(return_data) {
-			alert(return_data);
+			//alert(return_data);
           if(return_data == "1"){
             alert('Someting went wrong!!!');
           }  else{
