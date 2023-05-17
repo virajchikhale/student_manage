@@ -145,7 +145,11 @@
 		</div>
 	</div>
 
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> ecbbc5e9c59bae2fb39869d9289b2845c380aac7
     <script> 
 	function checkmobno() {
 		var mob = $('#phoneno').val();
