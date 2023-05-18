@@ -24,6 +24,9 @@ if($table=="teacher_reg"){
         $x=mysql_fetch_array(mysql_query($i));
         $sqlinsert="insert into hod_reg(first_name, last_name, email,phone,password,report_to,department_id) 
         values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."', '".$report_to."', '".$department."')";;
+}else if($table=="admin_reg"){
+        $sqlinsert="insert into admin_reg(first_name, last_name, email,phone,password) 
+        values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."')";;
 }
 
 $res=mysql_query($sqlinsert);

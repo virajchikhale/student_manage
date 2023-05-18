@@ -52,17 +52,17 @@
                                     <div class="col-sm-6">
                                         <div class="form-group">
                                             <label>First Name</label>
-                                            <input class="au-input au-input--full" type="text" name="first_name" placeholder="First Name">
+                                            <input class="au-input au-input--full" type="text" id="first_name" name="first_name" placeholder="First Name">
                                         </div>
                                         <div class="form-group">
                                             <label>Last Name</label>
-                                            <input class="au-input au-input--full" type="text" name="last_name" placeholder="Last Name">
+                                            <input class="au-input au-input--full" type="text" id="last_name" name="last_name" placeholder="Last Name">
                                         </div>
                                     </div>
                                     <div class="col-sm-6">
                                         <div class="form-group">
                                             <label>Phone Number</label>
-                                            <input class="au-input au-input--full" type="text" name="phoneno" placeholder="Phone Number">
+                                            <input class="au-input au-input--full" type="text" id="phoneno" name="phoneno" placeholder="Phone Number">
                                         </div>
                                         <div class="form-group">
                                             <label>Email Address</label>
@@ -89,7 +89,7 @@
                                     </div>
                                 </div>
                                 </div>
-                                <button type="submit" id="test" onclick=response() name="submit" class="au-btn au-btn--block au-btn--green m-b-20">
+                                <button type="Button" id="test" onclick=response() name="submit" class="au-btn au-btn--block au-btn--green m-b-20">
                                     Register
                                 </button >
                             </form>
@@ -147,59 +147,7 @@ function emailvalid() {
       });
     }
     
-    //password length validation 
-        function passvalid() {
-          var pass = $('#password').val();
-          
-          //alert(pass.length);
-          var len = pass.length;
-          //alert(len);
-              if(len < 8){
-                alert('Password must be atleast of 8 charechters');
-                $('#password').val('');
-                $('#password').focus();
-              }  
-        }
-    
-    //password length validation 
-        function passcon() {
-          var pass = $('#password').val();
-          var cpass = $('#cpassword').val();
-         
-              if(pass != cpass){
-                alert('Password Mismatched please try agian');
-                $('#cpassword').val('');
-                $('#cpassword').focus();
-              }  
-        }
-
-        
-        function disable() {
-        var x = document.getElementById("test");
-        x.disabled = true;
-        var x = document.getElementById("otp_box");
-        x.style.display = "none";
-
-        }
-
-        
-    function otpp() {
-      var raw = $('#otp').val();
-      var otp1 = raw.trim();
-    //   alert(window.otp);
-    //   alert(otp1);
-    //   alert(len);
-          if(otp1 !== otp){
-            alert('Plese enter valid OTP');
-            $('#otp').val('');
-            $('#otp').focus();
-          }  else{
-            var x = document.getElementById("test");
-            x.disabled = false;
-          }
-    }
-
-    
+       
         function response() {
         
             var email = $('#email').val();
@@ -210,26 +158,61 @@ function emailvalid() {
                 xmlhttp.open('GET', '../email/email_base.php?q='+email+'&type=thanks&position=admin', true);
                 xmlhttp.send(); 
           } 
+
+          function response() {
+        var fname = $('#first_name').val();
+        var lname = $('#last_name').val();
+        var email = $('#email').val();
+        var phoneno = $('#phoneno').val();
+        var password = $('#password').val();
+		var	table='admin_reg';
+		
+		$.ajax({
+        type:'POST',
+        url:'../sqloperations/insert_reg.php',
+        data:{fname:fname,
+			lname:lname,
+			email:email,
+			phoneno:phoneno,
+			password:password,
+			table:table
+		},
+        success:function(return_data) {
+			//alert(return_data);
+          if(return_data == "1"){
+            alert('Someting went wrong!!!');
+          }  else{
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                }
+                xmlhttp.open('GET', '../email/email_base.php?q='+email+'&type=thanks&position=admin', true);
+                xmlhttp.send(); 
+				alert('Signed Up Successfully....');
+				window.location.href='index.php';
+          } 
+        }
+      });
+	}
       </script>
 
 <?php
 		include('../includes/connection.php');
         
-		if(isset($_POST['submit'])){
-			$fname=$_POST['first_name'];
-			$lname=$_POST['last_name'];
-			$email=$_POST['email'];
-            $password=md5($_POST['password']);
-            $phoneno=$_POST['phoneno'];
+		// if(isset($_POST['submit'])){
+		// 	$fname=$_POST['first_name'];
+		// 	$lname=$_POST['last_name'];
+		// 	$email=$_POST['email'];
+        //     $password=md5($_POST['password']);
+        //     $phoneno=$_POST['phoneno'];
 
-            $sqlinsert="insert into admin_reg(first_name, last_name, email,password,phone) 
-            values('".$fname."' , '".$lname."', '".$email."', '".$password."', '".$phoneno."')";
-            mysql_query($sqlinsert);
+        //     $sqlinsert="insert into admin_reg(first_name, last_name, email,password,phone) 
+        //     values('".$fname."' , '".$lname."', '".$email."', '".$password."', '".$phoneno."')";
+        //     mysql_query($sqlinsert);
             
-            echo "<script> alert('Signed Up Successfully....'); </script>";
-            echo "<script> window.location.href='index.php'; </script>";    
+        //     echo "<script> alert('Signed Up Successfully....'); </script>";
+        //     echo "<script> window.location.href='index.php'; </script>";    
                 
-		}
+		// }
 
 	?>
 
@@ -256,6 +239,7 @@ function emailvalid() {
 
     <!-- Main JS-->
     <script src="js/main.js"></script>
+	<script src="js/validation.js"></script>
 
 </body>
 
