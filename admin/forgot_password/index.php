@@ -1,7 +1,3 @@
-<?php
-session_start();
-include('../../includes/connection.php');
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -61,11 +57,11 @@ include('../../includes/connection.php');
                                     placeholder="Plese enter your OTP">
                                 </div>
                                 <div class="form-group"  id="pass">
-                                    <input type="password" class="form-control form-control-user" id="pass1" onchange=passvalid() name="pass" required
+                                    <input type="password" class="form-control form-control-user" id="password" onchange=passvalid() name="pass" required
                                     placeholder="Plese enter New password">
                                 </div>
                                 <div class="form-group"  id="cpass">
-                                    <input type="password" class="form-control form-control-user" id="cpass1" onchange=passcon() name="cpass" required
+                                    <input type="password" class="form-control form-control-user" id="cpassword" onchange=passcon() name="cpass" required
                                     placeholder="Confirm your New password">
                                 </div>
                                 <div class="login-checkbox">
@@ -73,7 +69,7 @@ include('../../includes/connection.php');
                                         <a href="../forgot_password">Forgotten Password?</a>
                                     </label>
                                 </div>
-                                <button name="submit"  onclick=response() class="au-btn au-btn--block au-btn--green m-b-20" type="submit">Update</button>
+                                <button name="submit"  onclick=response() class="au-btn au-btn--block au-btn--green m-b-20" type="Button">Update</button>
                             </form>
                         </div>
                     </div>
@@ -87,29 +83,6 @@ include('../../includes/connection.php');
     
 <script>
 
-function passvalid() {
-      var pass = $('#pass1').val();
-      
-      //alert(pass.length);
-      var len = pass.length;
-      //alert(len);
-          if(len < 8){
-            alert('Password must be atleast of 8 charechters');
-            $('#pass1').val('');
-            $('#pass1').focus();
-          }  
-    }
-
-    function passcon() {
-      var pass = $('#pass1').val();
-      var cpass = $('#cpass1').val();
-     
-          if(pass != cpass){
-            alert('Password Mismatched please try agian');
-            $('#cpass1').val('');
-            $('#cpass1').focus();
-          }  
-    }
 
 function disable() {
     
@@ -202,32 +175,40 @@ function disable() {
           }
     }
 
-    function response() {
-        
-        var email = $('#email').val();
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                }
-                xmlhttp.open("GET", "../../email/email_base.php?q="+email+"&type=pass_change_alert&position=admin", true);
-                xmlhttp.send();
-          } 
+      function response() {
+    var email = $('#email').val();
+    var password = $('#password').val();
+    var	table='admin_reg';
+    // alert(email);
+    // alert(password);
+    // alert(table);
+    $.ajax({
+    type:'POST',
+    url:'../../sqloperations/update_reg.php',
+    data:{
+        email:email,
+        password:password,
+        table:table
+    },
+    success:function(return_data) {
+        //alert(return_data);
+      if(return_data == "1"){
+        alert('Someting went wrong!!!');
+      }  else{
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            }
+            xmlhttp.open('GET', '../email/email_base.php?q='+email+'&type=thanks&position=admin', true);
+            xmlhttp.send(); 
+            alert('Password Updated Successfully....');
+            window.location.href='index.php';
+      } 
+    }
+  });
+}
 </script>
 
 
-<?php
-    
-    include('../../includes/connection.php');
-    if(isset($_POST['submit'])){
-        $user=$_POST['email'];
-        $pass=md5($_POST['pass']);
-        $sql="UPDATE `admin_reg` SET `password`='".$pass."'  WHERE email='".$user."'" ;
-        mysql_query($sql);
-                   echo "<script> alert('Password updated Successfully....'); </script>";
-                   echo "<script> window.location.href='../index.php'; </script>";
-        }
-        // Set session variables
-    //echo "Session variables are set.";
-?>
     <!-- Jquery JS-->
     <script src="../vendor/jquery-3.2.1.min.js"></script>
     <!-- Bootstrap JS-->

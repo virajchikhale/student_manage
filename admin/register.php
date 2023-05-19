@@ -73,7 +73,7 @@
                                 </div>
                                 <div class="form-group" id="otp_box">
                                     <label>OTP</label>
-                                    <input class="au-input au-input--full" type="text" id="otp" name="otp" onchange=otpp() placeholder="Confirm Password">
+                                    <input class="au-input au-input--full" type="text" id="otp" name="otp" onchange=otpp() placeholder="Confirm OTP">
                                 </div>
                                 <div class="row">
                                 <div class="col-sm-6">
@@ -132,7 +132,7 @@ function emailvalid() {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
                 }
-                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&otp="+return_data+"&type=otp&position=admin", true);
+                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&otp="+return_data+"&type=reg_otp&position=admin", true);
                 xmlhttp.send();
                 // alert(return_data);
             alert('We have sent OTP to '+email);
@@ -195,26 +195,6 @@ function emailvalid() {
 	}
       </script>
 
-<?php
-		include('../includes/connection.php');
-        
-		// if(isset($_POST['submit'])){
-		// 	$fname=$_POST['first_name'];
-		// 	$lname=$_POST['last_name'];
-		// 	$email=$_POST['email'];
-        //     $password=md5($_POST['password']);
-        //     $phoneno=$_POST['phoneno'];
-
-        //     $sqlinsert="insert into admin_reg(first_name, last_name, email,password,phone) 
-        //     values('".$fname."' , '".$lname."', '".$email."', '".$password."', '".$phoneno."')";
-        //     mysql_query($sqlinsert);
-            
-        //     echo "<script> alert('Signed Up Successfully....'); </script>";
-        //     echo "<script> window.location.href='index.php'; </script>";    
-                
-		// }
-
-	?>
 
     <!-- Jquery JS-->
     <script src="vendor/jquery-3.2.1.min.js"></script>
