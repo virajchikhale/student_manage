@@ -13,7 +13,7 @@ session_start();
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>FramAdmin-Login</title>
+    <title>HOD-Login</title>
 
     <!-- Custom fonts for this template-->
     <link href="../includes/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -55,7 +55,7 @@ session_start();
 					</span>
 
 					<div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
-						<input class="input100" type="text" name="email" placeholder="Email">
+						<input class="input100" type="text" name="email"  id="email" placeholder="Email">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
 							<i class="fa fa-envelope" aria-hidden="true"></i>
@@ -63,7 +63,7 @@ session_start();
 					</div>
 
 					<div class="wrap-input100 validate-input" data-validate = "Password is required">
-						<input class="input100" type="password" name="pass" placeholder="Password">
+						<input class="input100" type="password" id="password" name="pass" placeholder="Password">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
 							<i class="fa fa-lock" aria-hidden="true"></i>
@@ -71,7 +71,7 @@ session_start();
 					</div>
 					
 					<div class="container-login100-form-btn">
-						<button type='submit' name="submit" class="login100-form-btn">
+					<button type='Button' onclick=response() id="submit" name="submit"  class="login100-form-btn">
 							Login
 						</button>
 					</div>
@@ -97,29 +97,6 @@ session_start();
 		</div>
 	</div>
 
-    <?php
-    
-		include('../includes/connection.php');
-		if(isset($_POST['submit'])){
-			$user=$_POST['email'];
-			$pass=$_POST['pass'];
-			$sql="SELECT * FROM `farmer_reg` WHERE `email` = '".$user."' AND `password`='".$pass."'";
-           // echo "==".$sql;
-			$result=mysql_query($sql);
-            $cont=mysql_num_rows($result);
-			if($cont>=1){
-					   echo "<script> alert('Logged in Successfully....'); </script>";
-					   echo "<script> window.location.href='farmer-dashboard'; </script>";
-					}
-					else{
-						echo "<script> alert('Plese check password and username....'); </script>";
-						echo "<script> window.location.href='index.php'; </script>";
-					}
-			}
-            // Set session variables
-        $_SESSION["user"] = "$user";
-        //echo "Session variables are set.";
-	?>
     <!-- Bootstrap core JavaScript-->
 
     <!--===============================================================================================-->	
@@ -135,6 +112,32 @@ session_start();
 		$('.js-tilt').tilt({
 			scale: 1.1
 		})
+		
+		function response() {
+        var email = $('#email').val();
+        var password = $('#password').val();
+		var	table='hod_reg';
+		//alert(password);
+		$.ajax({
+        type:'POST',
+        url:'../sqloperations/login.php',
+        data:{email:email,
+			password:password,
+			table:table
+		},
+        success:function(return_data) {
+			//alert(return_data);
+          if(return_data == "1"){
+			alert('Please check your username and password!!!');
+			$('#password').val('');
+			$('#password').focus();
+          }  else{ 
+				alert('Signed Up Successfully....');
+				window.location.href='index.php';
+          } 
+        }
+      });
+	}
 	</script>
 <!--===============================================================================================-->
 	<script src="../includes/js/main.js"></script>
