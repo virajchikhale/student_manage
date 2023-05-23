@@ -41,7 +41,7 @@ session_start();
 <!--===============================================================================================-->
 </head>
 
-<body>
+<body onload=disable()>
 
 <div class="limiter">
 		<div class="container-login100">
@@ -68,6 +68,9 @@ session_start();
 						<span class="symbol-input100">
 							<i class="fa fa-lock" aria-hidden="true"></i>
 						</span>
+					</div>
+					
+					<div id="alert" class="alert alert-danger" role="alert">
 					</div>
 					
 					<div class="container-login100-form-btn">
@@ -126,12 +129,13 @@ session_start();
 		},
         success:function(return_data) {
 			//alert(return_data);
+			var x = document.getElementById("alert");
+			x.style.display = "block";
           if(return_data == "1"){
-			alert('Please check your username and password!!!');
+			x.innerHTML = "Incorrect Username or Password!!!";
 			$('#password').val('');
 			$('#password').focus();
           }  else{ 
-				alert('Signed Up Successfully....');
 				window.location.href='index.php';
           } 
         }
