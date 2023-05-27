@@ -7,11 +7,10 @@ $table=$_POST['table'];
 $sql="SELECT * FROM $table WHERE `email` = '".$email."' AND `password`='".$password."'";
 $result=mysql_query($sql);
 $cont=mysql_num_rows($result);
-$_SESSION["user"] = $user;
 
         //echo $sql;
 if($cont>=1) {
-        echo $user;
+        echo $email;
         }
 else{
         echo "1";

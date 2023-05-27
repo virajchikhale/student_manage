@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,7 +36,7 @@
 </head>
 
 <body  onload=disable() class="animsition">
-    <P hidden id="php"></p>
+    <P hidden id="php"><?php echo $_SESSION["user"];?></p>
     <div class="page-wrapper">
         <div class="page-content--bge5">
             <div class="container">
@@ -121,7 +122,7 @@
     <script src="vendor/chartjs/Chart.bundle.min.js"></script>
     <script src="vendor/select2/select2.min.js">
     </script>
-
+   
     <script>
         
 		function disable() {
@@ -142,7 +143,7 @@
 			table:table
 		},
         success:function(return_data) {
-			//alert(return_data);
+			alert(return_data);
           if(return_data == "1"){
 			var x = document.getElementById("alert");
 			x.style.display = "block";
@@ -151,7 +152,8 @@
 			$('#password').focus();
           }  else{ 
 			var a = document.getElementById("php");
-			a.innerHTML = "<?php echo 'hii';?>";
+			a.innerHTML = "'<?php $_SESSION["user"]='.concat(return_data,'; ?>')";
+            alert("'<?php $_SESSION["user"]='.concat('',return_data,'','; ?>')");
                 
 				//window.location.href='dashboard.php';
           } 

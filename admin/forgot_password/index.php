@@ -66,7 +66,7 @@
                                 </div>
                                 <div class="login-checkbox">
                                     <label>
-                                        <a href="../forgot_password">Forgotten Password?</a>
+                                        <a href="../">Login</a>
                                     </label>
                                 </div>
                                 <button name="submit"  onclick=response() class="au-btn au-btn--block au-btn--green m-b-20" type="Button">Update</button>
@@ -201,7 +201,7 @@ function disable() {
             xmlhttp.open('GET', '../email/email_base.php?q='+email+'&type=thanks&position=admin', true);
             xmlhttp.send(); 
             alert('Password Updated Successfully....');
-            window.location.href='index.php';
+            window.location.href='../index.php';
       } 
     }
   });
