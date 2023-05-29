@@ -142,6 +142,32 @@ session_start();
         }
       });
 	}
+	// 	function response() {
+    //     var email = $('#email').val();
+    //     var password = $('#password').val();
+	// 	var	table='teacher_reg';
+	// 	//alert(password);
+	// 	$.ajax({
+    //     type:'POST',
+    //     url:'../sqloperations/login.php',
+    //     data:{email:email,
+	// 		password:password,
+	// 		table:table
+	// 	},
+    //     success:function(return_data) {
+	// 		//alert(return_data);
+	// 		var x = document.getElementById("alert");
+	// 		x.style.display = "block";
+    //       if(return_data == "1"){
+	// 		x.innerHTML = "Incorrect Username or Password!!!";
+	// 		$('#password').val('');
+	// 		$('#password').focus();
+    //       }  else{ 
+	// 			window.location.href='index.php';
+    //       } 
+    //     }
+    //   });
+	// }
 	</script>
 <!--===============================================================================================-->
 	<script src="../includes/js/main.js"></script>
