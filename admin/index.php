@@ -151,11 +151,7 @@
 			$('#password').val('');
 			$('#password').focus();
           }  else{ 
-			var a = document.getElementById("php");
-			a.innerHTML = "'<?php $_SESSION["user"]='.concat(return_data,'; ?>')";
-            alert("'<?php $_SESSION["user"]='.concat('',return_data,'','; ?>')");
-                
-				//window.location.href='dashboard.php';
+				window.location.href = 'dashboard.php';
           } 
         }
       });
