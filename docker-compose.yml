@@ -1,0 +1,85 @@
+# Student Management System (PHP + PostgreSQL)
+#   docker compose up -d --build        App: http://localhost:8080   Mail: http://localhost:8025
+#   ./stop.sh                           stop (with DEMO=true this also deletes all data)
+#
+# Values come from a .env file next to this one (copy .env.example); every
+# variable has a default so the stack also starts without it.
+#
+# DEMO=true   every start wipes the data and loads the demo data (database/seed.php);
+#             ./stop.sh then removes the volumes too.
+# DEMO=false  starts with the departments only (plus ADMIN_EMAIL if set); data is kept.
+
+x-app-env: &app-env
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_NAME: ${DB_NAME:-student_management}
+  DB_USER: ${DB_USER:-student}
+  DB_PASSWORD: ${DB_PASSWORD:-student}
+  APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Kolkata}
+  DEMO: ${DEMO:-false}
+  DEMO_PASSWORD: ${DEMO_PASSWORD:-demo12345}
+
+services:
+  app:
+    build: .
+    image: student_manage-app
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      <<: *app-env
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-none}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@student.local}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Student Management}
+    depends_on:
+      db:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-student_management}
+      POSTGRES_USER: ${DB_USER:-student}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-student}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      # Over TCP on purpose: the server only listens there once the first-run init has finished
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # Runs on every "up": applies the schema, ensures the admin, loads demo data when DEMO=true
+  seed:
+    build: .
+    image: student_manage-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - ./database:/seed:ro
+    command: ["php", "/seed/seed.php"]
+    restart: "no"
+
+  # Local mail catcher. Point SMTP_* at a real server in .env to send real email.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+    restart: unless-stopped
+
+volumes:
+  pg_data:

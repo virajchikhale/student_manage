@@ -1,6 +1,6 @@
 # 🎓 Student Management System
 
-A web-based **Student Management System** built with PHP, MySQL, and Bootstrap 4. This application provides a hierarchical, multi-role platform for managing academic institutions — from Admin oversight down to Teacher registration — with OTP-based email verification, session authentication, and a responsive admin dashboard.
+A web-based **Student Management System** built with PHP 8, PostgreSQL, and Bootstrap 4. This application provides a hierarchical, multi-role platform for managing academic institutions — from Admin oversight down to Teacher registration — with OTP-based email verification, session authentication, and a responsive admin dashboard.
 
 ---
 
@@ -38,11 +38,11 @@ A web-based **Student Management System** built with PHP, MySQL, and Bootstrap 4
 
 | Layer        | Technology                                  |
 |--------------|---------------------------------------------|
-| **Backend**  | PHP 5.x / 7.x (legacy `mysql_*` functions)  |
-| **Database** | MySQL — `student_management` database       |
+| **Backend**  | PHP 8.x (PDO, prepared statements)          |
+| **Database** | PostgreSQL 16 — `student_management` database |
 | **Frontend** | HTML5, CSS3, JavaScript (ES5), jQuery 3.2   |
 | **UI Framework** | Bootstrap 4.1                           |
-| **Email**    | PHPMailer (SMTP via Gmail App Password)      |
+| **Email**    | PHPMailer (any SMTP server; Mailpit in Docker)      |
 | **Icons**    | Font Awesome 4.7 / 5, Material Design Icons |
 | **Charts**   | Chart.js                                    |
 | **Map**      | jQVMap (Vector Map)                          |
@@ -55,42 +55,20 @@ A web-based **Student Management System** built with PHP, MySQL, and Bootstrap 4
 ```
 student_manage/
 │
-├── admin/                  ← Admin portal (login, register, dashboard)
-│   ├── admin_includes/     ← Shared header & sidebar partials
-│   ├── forgot_password/    ← Admin password reset (OTP-based)
-│   ├── css / js / vendor/  ← Admin-specific assets
-│   ├── index.php           ← Admin login page
-│   ├── register.php        ← Admin registration with OTP
-│   └── dashboard.php       ← Admin dashboard with live stats
-│
-├── login/                  ← Role-specific login pages
-│   ├── hod_login.php       ← HOD login
-│   ├── principal_reg.php   ← Principal login
-│   └── teacher_reg.php     ← Teacher login
-│
-├── registration/           ← Role-specific multi-step registration forms
-│   ├── hod_reg.php         ← HOD registration wizard (3 steps)
-│   ├── principal_reg.php   ← Principal registration
-│   └── teacher_reg.php     ← Teacher registration
-│
-├── sqloperations/          ← Backend AJAX handlers for DB operations
-│   ├── insert_reg.php      ← Handles all role INSERT operations
-│   ├── update_reg.php      ← Handles password update operations
-│   └── login.php           ← Authenticates users against MD5-hashed passwords
-│
-├── validation/             ← Real-time AJAX validation endpoints
-│   ├── emailvalid.php      ← Checks for duplicate email per role table
-│   ├── checkmob.php        ← Checks for duplicate phone number
-│   └── codevalid.php       ← OTP/code validation
-│
-├── email/                  ← PHPMailer-based email service
-│   ├── email_base.php      ← Main mailer script
-│   ├── variables.php       ← Email subject/body templates per role & action
-│   └── index.php           ← Router / entry point
-│
-└── includes/               ← Shared assets and DB connection
-    ├── connection.php      ← MySQL DB connection
-    └── css / js / vendor/  ← Shared frontend libraries
+├── index.php               ← Landing page (links to every portal)
+├── forgot_password.php     ← Password reset (OTP) for every role: ?role=hod
+├── logout.php
+├── admin/                  ← Admin portal: login, register, dashboard, people, departments
+├── login/                  ← Principal / HOD / Teacher login pages
+├── registration/           ← Principal / HOD / Teacher registration wizards
+├── portal/                 ← Landing page after principal / HOD / teacher login
+├── api/                    ← JSON endpoints: login, register, otp, check, reset_password, admin
+├── includes/
+│   ├── bootstrap.php       ← env config, PDO, session, CSRF, OTP, mail helpers
+│   └── js/auth.js          ← client for all the forms
+├── email/phpmailer/        ← PHPMailer library (used by includes/bootstrap.php)
+├── database/               ← schema.sql, seed.php (demo data)
+├── Dockerfile, docker-compose.yml, stop.sh, .env.example
 ```
 
 ---
@@ -119,7 +97,7 @@ Admin
 
 ## 🗄 Database Schema
 
-The application connects to a MySQL database named **`student_management`**.
+The application connects to a PostgreSQL database named **`student_management`**.
 
 ### Tables
 
@@ -131,30 +109,27 @@ The application connects to a MySQL database named **`student_management`**.
 | `teacher_reg`    | `id`, `first_name`, `last_name`, `email`, `phone`, `password`, `report_to`, `department_id` |
 | `department`     | `id`, `name`, `status` (`0` = available, `1` = assigned)              |
 
-> Passwords are stored as **MD5 hashes**.
+> Passwords are stored with `password_hash()` (bcrypt). Accounts from the old MD5 version still work and are upgraded on first login.
+> `details` holds the principal verification codes an admin generates on the dashboard.
 
 ---
 
 ## 📧 Email & OTP System
 
-The email module (`email/`) uses **PHPMailer** with Gmail SMTP.
+Mail is sent with **PHPMailer** through the SMTP server configured by the `SMTP_*` environment variables (see `.env.example`). With Docker the bundled Mailpit catches every mail at http://localhost:8025.
 
-### Email Types
-
-| Type                 | Trigger                                | Audience        |
-|----------------------|----------------------------------------|-----------------|
-| `reg_otp`            | On email entry during registration     | All roles        |
-| `forgot_otp`         | On email entry during password reset   | All roles        |
-| `thanks`             | After successful registration          | All roles        |
-| `pass_change_alert`  | After successful password change       | All roles        |
+| Mail          | Trigger                                  |
+|---------------|------------------------------------------|
+| OTP           | Entering an email on a registration page / on the forgot-password page |
+| Welcome       | After successful registration            |
+| Password alert| After a successful password change       |
 
 ### OTP Flow
 
-1. User enters email on registration/forgot-password page
-2. System validates the email (checks for existence/uniqueness)
-3. A random OTP is generated server-side and emailed to the user
-4. User enters the OTP on the frontend; it is verified client-side (JS comparison)
-5. On success, the registration or password update is submitted
+1. The user enters an email; the server checks it (unique for sign-up, registered for reset)
+2. The server generates a random OTP, keeps only a keyed hash of it in the session (10 minute expiry, 5 tries, 30 s resend delay) and emails it
+3. The OTP is sent back with the final form and **verified on the server**; it is single-use
+4. In `DEMO=true` the OTP is also shown in a popup, since demo visitors have no inbox
 
 ---
 
@@ -164,12 +139,13 @@ See [SETUP.md](./SETUP.md) for full installation and configuration instructions.
 
 ---
 
-## ⚠ Known Limitations
+## 🔒 Security notes
 
-- **Deprecated MySQL Extension** — The project uses the legacy `mysql_*` PHP extension, which was removed in PHP 7.0+. A web server running **PHP 5.6** (or XAMPP/WAMP with PHP 5.6) is required, or the codebase needs to be migrated to `mysqli_*` or PDO.
-- **Client-Side OTP Verification** — OTP is currently validated on the browser side (JavaScript). For production use, this should be moved to a server-side check.
-- **MD5 Passwords** — Passwords are hashed with MD5, which is cryptographically weak. Migration to `password_hash()` / `password_verify()` (bcrypt) is strongly recommended for any production deployment.
-- **SQL Injection Risk** — Direct string interpolation is used in SQL queries. Prepared statements (PDO/MySQLi) should be adopted for security.
+- All SQL uses prepared statements; table names come from a fixed whitelist.
+- Sessions are server-side (`SMSSESSID`, HttpOnly, SameSite=Lax, ID regenerated on login); every API call needs a CSRF token.
+- Admin sign-up is only open for the very first admin, or to a signed-in admin (**Add admin**).
+- SMTP credentials come from the environment — the old hard-coded Gmail password was removed from the code. **It is still in the git history: revoke that app password.**
+- Login throttling is per session only; put a rate limiter (e.g. fail2ban / reverse proxy) in front for production.
 
 ---
 

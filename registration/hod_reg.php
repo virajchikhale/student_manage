@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../includes/bootstrap.php';
+$pdo = db();
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,11 +20,10 @@
 		.btn-block{display:block;width:100%}
 		.text-right{margin-left:5%!important}
 		</style>
+
+	<?php echo head_meta(); ?>
 </head>
-<?php
-		include("../includes/connection.php");
-	?>
-<body onload="disable()">
+<body>
 	<div class="page-content">
 		<div class="form-v1-content">
 			<div class="wizard-form">
@@ -102,12 +105,9 @@
 										<select class="form-control" id="department" name="department" onchange=selectnone(this.id)>
 										<option value="none">Select Department</option>
 										<?php
-											$resu = mysql_query("select * from department where status='0'");
-											$i = 1;
-											while($row = mysql_fetch_array($resu))
-													{ ?>
-												<option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-											<?php $i++;} ?> 
+											foreach ($pdo->query("SELECT id, name FROM department WHERE status = 0 ORDER BY name") as $row) { ?>
+												<option value="<?php echo $row['id']; ?>"><?php echo e($row['name']); ?></option>
+											<?php } ?> 
 										</select>
 									</div>
 								</div>
@@ -117,12 +117,9 @@
 										<select class="form-control" id="report_to" name="report_to" onchange=selectnone(this.id)>
 										<option value="none">Select Reporting</option>
 										<?php
-											$resu = mysql_query("select * from principal_reg");
-											$i = 1;
-											while($row = mysql_fetch_array($resu))
-													{ ?>
-												<option value="<?php echo $row['id']; ?>"><?php echo $row['first_name']; ?></option>
-											<?php $i++;} ?> 
+											foreach ($pdo->query("SELECT id, first_name, last_name FROM principal_reg ORDER BY first_name") as $row) { ?>
+												<option value="<?php echo $row['id']; ?>"><?php echo e($row['first_name'].' '.$row['last_name']); ?></option>
+											<?php } ?> 
 										</select>
 									</div>
 								</div>
@@ -143,7 +140,7 @@
 									<div class="form-holder form-holder-1">
 										<fieldset>
 												<legend>OTP</legend>
-											<input type="text" class="form-control" onchange=otp() onkeyup=otp1()  id="otp" name="otp" placeholder="Enter your OTP" required>
+											<input type="text" class="form-control" id="otp" name="otp" placeholder="Enter your OTP" required>
 										</fieldset>
 									</div>
 								</div>
@@ -160,103 +157,10 @@
 		</div>
 	</div>
 	<!--mobile number validation -->
-    <script> 
-
-	function checkmobno() {
-		var mob = $('#phoneno').val();
-		//alert(mob);
-		$.ajax({
-		type:'POST',
-		url:'../validation/checkmob.php',
-		data:{mob:mob,table:'hod_reg'},
-		success:function(return_data) {
-			if(return_data == 1){
-			alert('This Number already exist in system');
-			$('#phoneno').val('');
-			$('#phoneno').focus();
-			}   //	alert(return_data);      
-		}
-		});
-	}
-
-	function emailvalid(str) {
-      var email = $('#email').val();
-      //alert(email);
-      $.ajax({
-        type:'POST',
-        url:'../validation/emailvalid.php',
-        data:{email:email,
-			type:'reg',
-			table:'hod_reg'
-		},
-        success:function(return_data) {
-          if(return_data == "1"){
-            alert('This Email already exist in system');
-            $('#email').val('');
-            $('#email').focus();
-          }  else{
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                }
-                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=hod", true);
-                xmlhttp.send();
-                //alert(return_data);
-            alert('We have sent OTP to '+str);
-            otp = return_data;
-			
-			//alert(otp);
-          }   
-        }
-      });
-    }
-
-	function response() {
-
-		
-		var fname = $('#fname').val();
-		var lname = $('#lname').val();
-		var email = $('#email').val();
-		var phoneno = $('#phoneno').val();
-		var password = $('#password').val();
-		var department = $('#department').val();
-		var report_to = $('#report_to').val();
-		var	table='hod_reg';
-			
-		
-		$.ajax({
-			type:'POST',
-			url:'../sqloperations/insert_reg.php',
-			data:{fname:fname,
-				lname:lname,
-				email:email,
-				phoneno:phoneno,
-				password:password,
-				department:department,
-				report_to:report_to,
-				table:table
-			},
-			success:function(return_data) {
-				//alert(return_data);
-			if(return_data == "1"){
-				alert('Someting went wrong!!!');
-			}  else{
-
-				var xmlhttp = new XMLHttpRequest();
-				xmlhttp.onreadystatechange = function() {
-					}
-					xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=hod", true);
-					xmlhttp.send();
-					alert('Signed Up Successfully....');
-					window.location.href='index.php';
-			} 
-			}
-		});
-		}
-
-	</script>
-	<script src="../includes/js/jquery-3.3.1.min.js"></script>
+    <script src="../includes/js/jquery-3.3.1.min.js"></script>
+	<script src="../includes/js/auth.js"></script>
+	<script>Auth.initRegister('hod', { fields: ['department','report_to'] });</script>
 	<script src="../includes/js/jquery.steps.js"></script>
 	<script src="../includes/js/main_steps.js"></script>
-	<script src="../includes/js/validation.js"></script>
 </body>
 </html>

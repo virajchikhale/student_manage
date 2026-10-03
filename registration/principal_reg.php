@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../includes/bootstrap.php';
+$pdo = db();
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,27 +20,10 @@
 		.btn-block{display:block;width:100%}
 		.text-right{margin-left:5%!important}
 		</style>
-</head>
-<?php
-		include("../includes/connection.php");
-		// if(isset($_POST['submit'])){
-		// $fname=$_POST['fname'];
-		// $lname=$_POST['lname'];
-		// $email=$_POST['email'];
-		// $phoneno=$_POST['phoneno'];
-		// $password=md5($_POST['password']);
-		// $cpassword=$_POST['cpassword'];
 
-		// $sqlinsert="insert into principal_reg(first_name, last_name, email,phone,password) 
-		// values('".$fname."' , '".$lname."', '".$email."', '".$phoneno."', '".$password."')";
-		// mysql_query($sqlinsert);
-		// //echo $sqlinsert;
-		// echo "<script> alert('Signed Up Successfully....'); </script>";
-		// echo "<script> window.location.href='index.php'; </script>";
-                                        
-		// }
-	?>
-<body onload="disable()">
+	<?php echo head_meta(); ?>
+</head>
+<body>
 	<div class="page-content">
 		<div class="form-v1-content">
 			<div class="wizard-form">
@@ -116,7 +103,7 @@
 									<div class="form-holder form-holder-2">
 										<fieldset>
 											<legend>Verification Code</legend>
-											<input type="text" class="form-control" onchange=code_valid(this.value) id="code" name="code" placeholder="Enter your code" required>
+											<input type="text" class="form-control" id="code" name="code" placeholder="Enter your code" required>
 										</fieldset>
 									</div>
 								</div>
@@ -137,7 +124,7 @@
 									<div class="form-holder form-holder-1">
 										<fieldset>
 												<legend>OTP</legend>
-											<input type="text" class="form-control" onchange=otp() onkeyup=otp1()  id="otp" name="otp" placeholder="Enter your OTP" required>
+											<input type="text" class="form-control" id="otp" name="otp" placeholder="Enter your OTP" required>
 										</fieldset>
 									</div>
 								</div>
@@ -154,119 +141,10 @@
 		</div>
 	</div>
 	<!--mobile number validation -->
-    <script> 
-	function checkmobno() {
-		var mob = $('#phoneno').val();
-		//alert(mob);
-		$.ajax({
-		type:'POST',
-		url:'../validation/checkmob.php',
-		data:{mob:mob,table:'principal_reg'},
-		success:function(return_data) {
-			if(return_data == 1){
-			alert('This Number already exist in system');
-			$('#phoneno').val('');
-			$('#phoneno').focus();
-			}   //	alert(return_data);      
-		}
-		});
-	}
-
-
-
-
-	function emailvalid(str) {
-      var email = $('#email').val();
-      //alert(email);
-      $.ajax({
-        type:'POST',
-        url:'../validation/emailvalid.php',
-        data:{email:email,
-			type:'reg',
-			table:'principal_reg'
-		},
-        success:function(return_data) {
-          if(return_data == "1"){
-            alert('This Email already exist in system');
-            $('#email').val('');
-            $('#email').focus();
-          }  else{
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                }
-                xmlhttp.open("GET", "../email/email_base.php?q="+str+"&otp="+return_data+"&type=reg_otp&position=principal", true);
-                xmlhttp.send();
-                //alert(return_data);
-            alert('We have sent OTP to '+str);
-            otp = return_data;
-			
-			//alert(otp);
-          }   
-        }
-      });
-    }
-
-	
-	function code_valid(str) {
-      //alert(str);
-      $.ajax({
-        type:'POST',
-        url:'../validation/codevalid.php',
-        data:{code:str
-		},
-        success:function(return_data) {
-			//alert(return_data);
-          if(return_data == "1"){
-            alert('Please enter vaild Admin code.');
-            $('#code').val('');
-            $('#code').focus();
-          } 
-        }
-      });
-    }
-
-
-	function response() {
-        
-        var fname = $('#fname').val();
-        var lname = $('#lname').val();
-        var email = $('#email').val();
-        var phoneno = $('#phoneno').val();
-        var password = $('#password').val();
-		var	table="principal_reg";
-
-		//alert(fname);
-		$.ajax({
-        type:'POST',
-        url:'../sqloperations/insert_reg.php',
-        data:{fname:fname,
-			lname:lname,
-			email:email,
-			phoneno:phoneno,
-			password:password,
-			table:table
-		},
-        success:function(return_data) {
-			//alert(return_data);
-          if(return_data == "1"){
-            alert('Someting went wrong!!!');
-          }  else{
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-                }
-                xmlhttp.open("GET", "../email/email_base.php?q="+email+"&type=thanks&position=principal", true);
-                xmlhttp.send();
-				alert('Signed Up Successfully....');
-				window.location.href='index.php';
-			}
-	} 
-      });
-	}
-
-  </script>
-	<script src="../includes/js/jquery-3.3.1.min.js"></script>
+    <script src="../includes/js/jquery-3.3.1.min.js"></script>
+	<script src="../includes/js/auth.js"></script>
+	<script>Auth.initRegister('principal', { fields: ['code'] });</script>
 	<script src="../includes/js/jquery.steps.js"></script>
 	<script src="../includes/js/main_steps.js"></script>
-	<script src="../includes/js/validation.js"></script>
 </body>
 </html>

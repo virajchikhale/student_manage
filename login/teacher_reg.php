@@ -1,7 +1,4 @@
-<?php
-// Start the session
-session_start();
-?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,13 +13,11 @@ session_start();
     <title>Teacher-Login</title>
 
     <!-- Custom fonts for this template-->
-    <link href="../includes/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="../includes/css/sb-admin-2.css" rel="stylesheet">
     <!--===============================================================================================-->	
 	<link rel="icon" type="image/png" href="../includes/images/icons/favicon.ico"/>
 <!--===============================================================================================-->
@@ -39,6 +34,8 @@ session_start();
 	<link rel="stylesheet" type="text/css" href="../includes/css/util.css">
 	<link rel="stylesheet" type="text/css" href="../includes/css/main.css">
 <!--===============================================================================================-->
+
+	<?php echo head_meta(); ?>
 </head>
 
 <body onload=disable()>
@@ -51,11 +48,11 @@ session_start();
 				</div>
                 <form method="post" class="login100-form validate-form">
 					<span class="login100-form-title">
-						Farmer Login
+						Teacher Login
 					</span>
 
 					<div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
-						<input class="input100" type="text" name="email"  id="email" placeholder="Email">
+						<input class="input100" type="email" name="email"  id="email" placeholder="Email">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
 							<i class="fa fa-envelope" aria-hidden="true"></i>
@@ -70,6 +67,7 @@ session_start();
 						</span>
 					</div>
 					
+					<?php echo demo_banner('teacher'); ?>
 					<div id="alert" class="alert alert-danger" role="alert">
 					</div>
 					
@@ -83,13 +81,13 @@ session_start();
 						<span class="txt1">
 							Forgot
 						</span>
-						<a class="txt2" href="forgot_password">
+						<a class="txt2" href="../forgot_password.php?role=teacher">
 							Username / Password?
 						</a>
 					</div>
 
 					<div class="text-center p-t-136">
-						<a class="txt2" href="reg">
+						<a class="txt2" href="../registration/teacher_reg.php">
 							Create your Account
 							<i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
 						</a>
@@ -111,66 +109,12 @@ session_start();
 	<script src="../includes/vendor/select2/select2.min.js"></script>
 <!--===============================================================================================-->
 	<script src="../includes/vendor/tilt/tilt.jquery.min.js"></script>
-	<script >
-		$('.js-tilt').tilt({
-			scale: 1.1
-		})
-		
-		function response() {
-        var email = $('#email').val();
-        var password = $('#password').val();
-		var	table='teacher_reg';
-		//alert(password);
-		$.ajax({
-        type:'POST',
-        url:'../sqloperations/login.php',
-        data:{email:email,
-			password:password,
-			table:table
-		},
-        success:function(return_data) {
-			//alert(return_data);
-			var x = document.getElementById("alert");
-			x.style.display = "block";
-          if(return_data == "1"){
-			x.innerHTML = "Incorrect Username or Password!!!";
-			$('#password').val('');
-			$('#password').focus();
-          }  else{ 
-				window.location.href='index.php';
-          } 
-        }
-      });
-	}
-	// 	function response() {
-    //     var email = $('#email').val();
-    //     var password = $('#password').val();
-	// 	var	table='teacher_reg';
-	// 	//alert(password);
-	// 	$.ajax({
-    //     type:'POST',
-    //     url:'../sqloperations/login.php',
-    //     data:{email:email,
-	// 		password:password,
-	// 		table:table
-	// 	},
-    //     success:function(return_data) {
-	// 		//alert(return_data);
-	// 		var x = document.getElementById("alert");
-	// 		x.style.display = "block";
-    //       if(return_data == "1"){
-	// 		x.innerHTML = "Incorrect Username or Password!!!";
-	// 		$('#password').val('');
-	// 		$('#password').focus();
-    //       }  else{ 
-	// 			window.location.href='index.php';
-    //       } 
-    //     }
-    //   });
-	// }
+	<script>
+		$('.js-tilt').tilt({ scale: 1.1 });
 	</script>
+	<script src="../includes/js/auth.js"></script>
+	<script>Auth.initLogin('teacher');</script>
 <!--===============================================================================================-->
-	<script src="../includes/js/main.js"></script>
 
 </body>
 
