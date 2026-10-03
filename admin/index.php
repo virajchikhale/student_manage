@@ -55,7 +55,8 @@ $canSignUp = (int) db()->query('SELECT COUNT(*) FROM admin_reg')->fetchColumn() 
                             <div class="register-link">
                                 <p><a href="../login/principal_reg.php">Principal</a> &middot;
                                    <a href="../login/hod_login.php">HOD</a> &middot;
-                                   <a href="../login/teacher_reg.php">Teacher</a> login</p>
+                                   <a href="../login/teacher_reg.php">Teacher</a> &middot;
+                                   <a href="../login/student_login.php">Student</a> login</p>
                             </div>
                         </div>
                     </div>

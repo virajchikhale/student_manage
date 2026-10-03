@@ -18,12 +18,14 @@ Services: `app` (PHP 8.3 + Apache), `db` (PostgreSQL 16), `seed` (one-shot job o
 
 **Typical order:** admin → generate a *principal verification code* on the dashboard → principal registers with it → HODs (pick a free department + principal) → teachers (department must already have an HOD). Departments are managed under *Departments*.
 
+Then the academic side: HOD / principal / admin add **Courses** (assign a teacher of the department) and **Students** (a temporary password is shown once and emailed) → teachers take **Attendance** and enter **Exams & marks** → everyone can read **Notices**, and staff open **Reports**. Students sign in at `/login/student_login.php`.
+
 ### Demo mode
 
 `DEMO=true` (in `.env` or exported) makes every start:
 
-1. wipe all people, codes and departments, then load demo data (`database/seed.php`): 1 admin, 1 principal, 3 HODs, 7 teachers, code `DEMO-PRINCIPAL`; *Mechanical Engineering* is left without an HOD so HOD sign-up can be tried;
-2. show demo logins on the login pages (`admin@demo.local`, `principal@demo.local`, `hod.cs@demo.local`, `teacher.cs1@demo.local`, password `demo12345` — `DEMO_PASSWORD`);
+1. wipe all data, then load demo data (`database/seed.php`): 1 admin, 1 principal, 3 HODs, 7 teachers, code `DEMO-PRINCIPAL`; *Mechanical Engineering* is left without an HOD so HOD sign-up can be tried; plus 24 students, 9 courses, four weeks of attendance, three exams per course with marks, and a few notices;
+2. show demo logins on the login pages (`admin@demo.local`, `principal@demo.local`, `hod.cs@demo.local`, `teacher.cs1@demo.local`, `student.cs1@demo.local`, password `demo12345` — `DEMO_PASSWORD`);
 3. show OTP codes in a popup instead of requiring an inbox.
 
 `./stop.sh` removes the containers **and the database volume** when `DEMO=true`, so the next start is clean (with `DEMO=false` it only stops). `_infra/demo.sh student` starts the stack with `DEMO=true`, opens a public tunnel and cleans everything up on Ctrl+C.

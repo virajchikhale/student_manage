@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 api_guard();
 
 $role  = role_param();
+if ($role === 'student') {
+    fail('Students are enrolled by the staff. Ask your department.', 403);
+}
 $first = post('fname');
 $last  = post('lname');
 $email = post('email');

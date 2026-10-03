@@ -21,7 +21,15 @@ A web-based **Student Management System** built with PHP 8, PostgreSQL, and Boot
 
 ## ✨ Features
 
-- **Role-Based Access Control** — Four distinct user roles: Admin, Principal, HOD, and Teacher
+- **Role-Based Access Control** — Five roles: Admin, Principal, HOD, Teacher and Student, each with its own dashboard and permissions
+- **Student Records** — Enrol, edit, search, filter and delete students; auto roll numbers; temporary password emailed to the new student; printable student record
+- **Courses** — Courses per department and semester with an assigned teacher; students are placed in every course of their department + semester
+- **Attendance** — Take attendance per course and date (Present / Late / Absent), edit past days, session history chart, per-student percentage
+- **Exams & Marks** — Create exams with maximum marks, enter marks with live percentage and grade, class average and pass count
+- **Reports** — Attendance, results and low-attendance (< 75 %) reports with CSV export and print
+- **Notices** — Announcements for everyone, staff only or students only
+- **Role dashboards** — Stat cards, attendance trend, department / semester charts and "needs attention" lists (pure CSS, no chart library)
+- **My profile** — Everyone can edit their details and change their password
 - **OTP Email Verification** — Every registration is secured with a one-time password sent via PHPMailer (SMTP)
 - **Multi-Step Registration Wizard** — Guided step-by-step registration forms for HODs and Teachers
 - **Forgot Password Flow** — Email-based OTP verification to securely reset passwords
@@ -59,13 +67,21 @@ student_manage/
 ├── forgot_password.php     ← Password reset (OTP) for every role: ?role=hod
 ├── logout.php
 ├── admin/                  ← Admin portal: login, register, dashboard, people, departments
-├── login/                  ← Principal / HOD / Teacher login pages
+├── login/                  ← Principal / HOD / Teacher / Student login pages
 ├── registration/           ← Principal / HOD / Teacher registration wizards
-├── portal/                 ← Landing page after principal / HOD / teacher login
-├── api/                    ← JSON endpoints: login, register, otp, check, reset_password, admin
+├── portal/                 ← Dashboard after principal / HOD / teacher / student login
+├── app/                    ← Shared pages: students, student, courses, attendance, exams, marks,
+│                             reports, export (CSV), notices, staff, profile
+├── api/                    ← JSON endpoints: login, register, otp, check, reset_password, admin,
+│                             student, course, attendance, marks, notice, profile
 ├── includes/
 │   ├── bootstrap.php       ← env config, PDO, session, CSRF, OTP, mail helpers
-│   └── js/auth.js          ← client for all the forms
+│   ├── domain.php          ← permissions (who sees / edits what), grades, attendance maths
+│   ├── layout.php          ← sidebar app shell + UI helpers (stat cards, bars, rings, pager)
+│   ├── dashboard.php       ← dashboard bodies per role
+│   ├── reports.php         ← report queries shared by the screen and the CSV export
+│   ├── css/app.css, js/app.js  ← design system and shared behaviour (toasts, confirm, API forms)
+│   └── js/auth.js          ← client for the login / registration forms
 ├── email/phpmailer/        ← PHPMailer library (used by includes/bootstrap.php)
 ├── database/               ← schema.sql, seed.php (demo data)
 ├── Dockerfile, docker-compose.yml, stop.sh, .env.example
@@ -82,6 +98,7 @@ Admin
   └── Principal
         └── HOD (Head of Department)
               └── Teacher
+                    └── Student (enrolled by the staff, no self sign-up)
 ```
 
 | Role          | Login Portal         | Registration                  | Reports To    |
@@ -90,6 +107,19 @@ Admin
 | **Principal** | `login/principal_reg.php` | `registration/principal_reg.php` | Admin    |
 | **HOD**       | `login/hod_login.php`| `registration/hod_reg.php`    | Principal     |
 | **Teacher**   | `login/teacher_reg.php` | `registration/teacher_reg.php` | HOD        |
+| **Student**   | `login/student_login.php` | created by Admin / Principal / HOD | —       |
+
+### What each role can do
+
+| | Admin | Principal | HOD | Teacher | Student |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Departments, accounts, principal codes | ✔ | | | | |
+| Add / edit / delete students and courses | ✔ | ✔ | own department | | |
+| View students and courses | all | all | own department | own department | self / own class |
+| Take attendance, create exams, enter marks | ✔ | ✔ | own department | own courses | |
+| Reports + CSV export | ✔ | ✔ | own department | own department | |
+| Post notices | ✔ | ✔ | ✔ | ✔ | read only |
+| See own attendance, results, notices | | | | | ✔ |
 
 > **HOD Registration Note:** A HOD must select an available (unassigned) department and a reporting Principal during registration. Once a HOD is assigned to a department, that department is marked as occupied and unavailable for other HODs.
 
@@ -108,8 +138,15 @@ The application connects to a PostgreSQL database named **`student_management`**
 | `hod_reg`        | `id`, `first_name`, `last_name`, `email`, `phone`, `password`, `report_to`, `department_id` |
 | `teacher_reg`    | `id`, `first_name`, `last_name`, `email`, `phone`, `password`, `report_to`, `department_id` |
 | `department`     | `id`, `name`, `status` (`0` = available, `1` = assigned)              |
+| `student`        | `id`, `roll_no`, name, `email`, `phone`, `password`, `department_id`, `semester`, `status` (active / inactive / graduated), guardian + address details |
+| `course`         | `id`, `code`, `name`, `department_id`, `semester`, `credits`, `teacher_id` |
+| `attendance`     | `course_id`, `student_id`, `att_date`, `status` (`P` / `A` / `L`) — unique per course, student and day |
+| `exam`, `mark`   | an exam belongs to a course (`title`, `exam_date`, `max_marks`); `mark` is one student's score |
+| `notice`         | `title`, `body`, `audience` (all / staff / students), author |
 
 > Passwords are stored with `password_hash()` (bcrypt). Accounts from the old MD5 version still work and are upgraded on first login.
+> A course is taught to every *active* student with the same department and semester, so there is no separate enrolment table.
+> Grades: A+ ≥ 90, A ≥ 80, B+ ≥ 70, B ≥ 60, C ≥ 50, D ≥ 40 (pass mark), F below. Minimum attendance: 75 %. Both are constants in `includes/domain.php`.
 > `details` holds the principal verification codes an admin generates on the dashboard.
 
 ---

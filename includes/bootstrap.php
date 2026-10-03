@@ -28,6 +28,8 @@ const ROLES = [
                     'login' => 'login/hod_login.php'],
     'teacher'   => ['table' => 'teacher_reg',   'label' => 'Teacher',   'home' => 'portal/index.php',
                     'login' => 'login/teacher_reg.php'],
+    'student'   => ['table' => 'student',       'label' => 'Student',   'home' => 'portal/index.php',
+                    'login' => 'login/student_login.php'],
 ];
 
 function db(): PDO
@@ -115,8 +117,7 @@ function require_login(string ...$roles): array
 {
     $u = current_user();
     if (!$u || ($roles && !in_array($u['role'], $roles, true))) {
-        $login = ROLES[$roles[0] ?? 'admin']['login'];
-        header('Location: ' . url($login));
+        header('Location: ' . url($roles ? ROLES[$roles[0]]['login'] : 'index.php'));
         exit;
     }
     return $u;
@@ -291,8 +292,12 @@ function demo_banner(string $role): string
     }
     $pw = e(env('DEMO_PASSWORD', 'demo12345'));
     $map = ['admin' => 'admin@demo.local', 'principal' => 'principal@demo.local',
-            'hod' => 'hod.cs@demo.local', 'teacher' => 'teacher.cs1@demo.local'];
+            'hod' => 'hod.cs@demo.local', 'teacher' => 'teacher.cs1@demo.local', 'student' => 'student.cs1@demo.local'];
     return '<div style="background:#fff3cd;color:#664d03;border:1px solid #ffecb5;border-radius:6px;padding:8px 12px;margin:10px 0;font-size:13px;text-align:left">'
          . '<b>Demo mode</b> &mdash; sign in with <code>' . e($map[$role]) . '</code> / <code>' . $pw . '</code>'
          . '<br>Data is wiped when the demo stops. OTP codes are shown on screen.</div>';
 }
+
+require_once __DIR__ . '/domain.php';
+require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/dashboard.php';
