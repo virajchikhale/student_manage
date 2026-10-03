@@ -13,6 +13,11 @@ if (!valid_email($email)) {
     fail('Please enter a valid email address.');
 }
 
+// Each request costs an email, so cap them per address and per client (before the existence check,
+// so the limit itself reveals nothing about which emails are registered)
+rate_limit_or_fail('otp_email', $purpose . '|' . $role . '|' . $email, 5, 3600, 'Too many OTP requests for this email. Please try again in an hour.');
+rate_limit_or_fail('otp_ip', client_ip(), 30, 3600, 'Too many OTP requests. Please try again later.');
+
 $table = ROLES[$role]['table'];
 $st = db()->prepare("SELECT 1 FROM $table WHERE email = ?");
 $st->execute([$email]);

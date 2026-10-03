@@ -64,11 +64,49 @@ function url(string $path = ''): string
     return app_root() . '/' . ltrim($path, '/');
 }
 
+/** Behind a reverse proxy that terminates TLS, set TRUST_PROXY=true so X-Forwarded-* headers are honoured. */
+function trust_proxy(): bool
+{
+    return in_array(strtolower((string) env('TRUST_PROXY', 'false')), ['true', '1', 'yes'], true);
+}
+
+function is_https(): bool
+{
+    if (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off') {
+        return true;
+    }
+    return trust_proxy() && strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+}
+
+/** The caller's address. X-Forwarded-For is only read when TRUST_PROXY=true, and then only its last entry
+ *  (the one our own proxy appended), because earlier entries are client-controlled. */
+function client_ip(): string
+{
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+    if (trust_proxy() && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $parts = array_map('trim', explode(',', (string) $_SERVER['HTTP_X_FORWARDED_FOR']));
+        $last  = end($parts);
+        if ($last !== false && filter_var($last, FILTER_VALIDATE_IP) !== false) {
+            $ip = $last;
+        }
+    }
+    return $ip;
+}
+
 if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
+    $secureCookie = match (strtolower((string) env('COOKIE_SECURE', 'auto'))) {
+        'true', '1', 'yes' => true,
+        'false', '0', 'no' => false,
+        default            => is_https(),
+    };
     session_name('SMSSESSID');
-    session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'path' => '/']);
+    session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'path' => '/', 'secure' => $secureCookie]);
     ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
     session_start();
+    if (is_https()) {
+        header('Strict-Transport-Security: max-age=31536000');
+    }
 }
 
 function e(?string $s): string
@@ -248,6 +286,54 @@ function otp_consume(string $purpose, string $role, string $email, string $otp):
     }
     unset($_SESSION['otp'][$k]);
     return true;
+}
+
+/* ---------- Rate limiting (stored in the database, so it cannot be dodged by dropping the session cookie) ---------- */
+
+function rate_key(string $subject): string
+{
+    return hash('sha256', strtolower($subject));
+}
+
+/** Count one event in a fixed window and return how many have happened in it. */
+function rate_hit(string $bucket, string $subject, int $windowSec): int
+{
+    if (random_int(1, 100) === 1) {   // prune stale rows now and then
+        db()->exec("DELETE FROM rate_limit WHERE window_start < now() - interval '1 day'");
+    }
+    $st = db()->prepare(
+        "INSERT INTO rate_limit (bucket, subject, hits, window_start) VALUES (?, ?, 1, now())
+         ON CONFLICT (bucket, subject) DO UPDATE SET
+           hits = CASE WHEN rate_limit.window_start < now() - (?::int * interval '1 second') THEN 1 ELSE rate_limit.hits + 1 END,
+           window_start = CASE WHEN rate_limit.window_start < now() - (?::int * interval '1 second') THEN now() ELSE rate_limit.window_start END
+         RETURNING hits"
+    );
+    $st->execute([$bucket, rate_key($subject), $windowSec, $windowSec]);
+    return (int) $st->fetchColumn();
+}
+
+/** Has this subject already used up its allowance in the current window? (does not count) */
+function rate_blocked(string $bucket, string $subject, int $max, int $windowSec): bool
+{
+    $st = db()->prepare(
+        "SELECT hits FROM rate_limit WHERE bucket = ? AND subject = ? AND window_start >= now() - (?::int * interval '1 second')"
+    );
+    $st->execute([$bucket, rate_key($subject), $windowSec]);
+    return (int) $st->fetchColumn() >= $max;
+}
+
+function rate_clear(string $bucket, string $subject): void
+{
+    db()->prepare('DELETE FROM rate_limit WHERE bucket = ? AND subject = ?')->execute([$bucket, rate_key($subject)]);
+}
+
+/** Count this request and answer 429 once the allowance is exceeded. */
+function rate_limit_or_fail(string $bucket, string $subject, int $max, int $windowSec, string $message): void
+{
+    if (rate_hit($bucket, $subject, $windowSec) > $max) {
+        header('Retry-After: ' . $windowSec);
+        fail($message, 429);
+    }
 }
 
 /* ---------- Mail ---------- */

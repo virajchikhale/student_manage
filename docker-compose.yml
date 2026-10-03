@@ -18,6 +18,8 @@ x-app-env: &app-env
   APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Kolkata}
   DEMO: ${DEMO:-false}
   DEMO_PASSWORD: ${DEMO_PASSWORD:-demo12345}
+  TRUST_PROXY: ${TRUST_PROXY:-false}
+  COOKIE_SECURE: ${COOKIE_SECURE:-auto}
 
 services:
   app:

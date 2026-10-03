@@ -8,8 +8,13 @@ $email = post('email');
 $pass  = $_POST['password'] ?? '';
 $pass  = is_string($pass) ? $pass : '';
 
-if (($_SESSION['login_lock'] ?? 0) > time()) {
-    fail('Too many attempts. Please wait a little and try again.', 429);
+// Failed attempts are counted per (address, account) and per address, in the database
+$ip       = client_ip();
+$acctKey  = $ip . '|' . $role . '|' . $email;
+$tooMany  = 'Too many attempts. Please wait 15 minutes and try again.';
+if (rate_blocked('login', $acctKey, 5, 900) || rate_blocked('login_ip', $ip, 30, 900)) {
+    header('Retry-After: 900');
+    fail($tooMany, 429);
 }
 
 $table = ROLES[$role]['table'];
@@ -36,14 +41,11 @@ if ($u) {
 }
 
 if (!$ok) {
-    $_SESSION['login_fails'] = ($_SESSION['login_fails'] ?? 0) + 1;
-    if ($_SESSION['login_fails'] >= 5) {
-        $_SESSION['login_fails'] = 0;
-        $_SESSION['login_lock']  = time() + 30;
-    }
+    rate_hit('login', $acctKey, 900);
+    rate_hit('login_ip', $ip, 900);
     fail('Incorrect email or password.', 401);
 }
 
-unset($_SESSION['login_fails'], $_SESSION['login_lock']);
+rate_clear('login', $acctKey);
 login_session($role, (int) $u['id']);
 json_out(['ok' => true, 'redirect' => url(ROLES[$role]['home'])]);

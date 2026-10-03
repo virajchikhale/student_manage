@@ -14,6 +14,9 @@ A web-based **Student Management System** built with PHP 8, PostgreSQL, and Boot
 - [Database Schema](#-database-schema)
 - [Email & OTP System](#-email--otp-system)
 - [Getting Started](#-getting-started)
+- [Security](#-security)
+- [Production deployment](#-production-deployment)
+- [Testing](#-testing)
 - [Known Limitations](#-known-limitations)
 - [License](#-license)
 
@@ -38,7 +41,7 @@ A web-based **Student Management System** built with PHP 8, PostgreSQL, and Boot
 - **Hierarchical Reporting Structure** — Teachers report to HODs; HODs report to Principals; Principals report to Admins
 - **Department Management** — Departments are linked to HODs; only unassigned departments are available during HOD registration
 - **Duplicate Prevention** — Real-time AJAX validation to prevent duplicate emails and phone numbers across all role tables
-- **Responsive UI** — Bootstrap 4-based layout with animations (WOW.js, Animsition) and perfect scrollbar
+- **Responsive UI** — Bootstrap 4-based layout with a sidebar app shell
 
 ---
 
@@ -48,13 +51,13 @@ A web-based **Student Management System** built with PHP 8, PostgreSQL, and Boot
 |--------------|---------------------------------------------|
 | **Backend**  | PHP 8.x (PDO, prepared statements)          |
 | **Database** | PostgreSQL 16 — `student_management` database |
-| **Frontend** | HTML5, CSS3, JavaScript (ES5), jQuery 3.2   |
-| **UI Framework** | Bootstrap 4.1                           |
+| **Frontend** | HTML5, CSS3, JavaScript (ES5), jQuery 3.x |
+| **UI Framework** | Bootstrap 4 |
 | **Email**    | PHPMailer (any SMTP server; Mailpit in Docker)      |
-| **Icons**    | Font Awesome 4.7 / 5, Material Design Icons |
-| **Charts**   | Chart.js                                    |
-| **Map**      | jQVMap (Vector Map)                          |
-| **Other**    | Select2, Animsition, WOW.js, Perfect Scrollbar, jQuery Steps (wizard) |
+| **Icons / fonts** | Font Awesome 4.7, Material Design Iconic Font, Open Sans, Montserrat, Poppins (Nunito from Google Fonts on the login pages) |
+| **Charts**   | None - dashboards are pure CSS (bars, rings, trend) |
+| **Other**    | Select2, Animsition, Tilt, jQuery Steps (registration wizard) |
+| **Packaging**| Docker Compose (app, PostgreSQL, Mailpit, one-shot seed job) |
 
 ---
 
@@ -84,7 +87,8 @@ student_manage/
 │   └── js/auth.js          ← client for the login / registration forms
 ├── email/phpmailer/        ← PHPMailer library (used by includes/bootstrap.php)
 ├── database/               ← schema.sql, seed.php (demo data)
-├── Dockerfile, docker-compose.yml, stop.sh, .env.example
+├── tests/smoke.sh          ← black-box smoke + security test (run in CI)
+├── Dockerfile, docker-compose.yml, docker-compose.prod.yml, stop.sh, .env.example
 ```
 
 ---
@@ -176,13 +180,65 @@ See [SETUP.md](./SETUP.md) for full installation and configuration instructions.
 
 ---
 
-## 🔒 Security notes
+## 🔒 Security
 
-- All SQL uses prepared statements; table names come from a fixed whitelist.
-- Sessions are server-side (`SMSSESSID`, HttpOnly, SameSite=Lax, ID regenerated on login); every API call needs a CSRF token.
-- Admin sign-up is only open for the very first admin, or to a signed-in admin (**Add admin**).
-- SMTP credentials come from the environment — the old hard-coded Gmail password was removed from the code. **It is still in the git history: revoke that app password.**
-- Login throttling is per session only; put a rate limiter (e.g. fail2ban / reverse proxy) in front for production.
+- All SQL uses prepared statements; table names come from a fixed whitelist. Output is escaped through shared helpers.
+- Passwords use `password_hash`; login also equalises timing for unknown accounts.
+- Sessions are server-side (`SMSSESSID`): HttpOnly, SameSite=Lax, `Secure` over HTTPS, ID regenerated on login. Every state-changing API call needs a CSRF token.
+- Every endpoint re-checks the caller's role and department/course scope on the server; the UI hiding a button is never the control.
+- **Rate limiting is stored in the database** (table `rate_limit`), so it cannot be dodged by dropping the session cookie: 5 failed logins per address+account and 30 per address in 15 minutes; 5 OTP e-mails per address and 30 per client per hour; 10 wrong principal verification codes per client per hour. Behind a proxy set `TRUST_PROXY=true` so the real client address is used.
+- OTPs are random, stored only as a keyed hash, expire after 10 minutes, allow 5 tries and are single-use.
+- Apache sends `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and a Content-Security-Policy; directory listing is off; `.env`, `database/`, `email/`, `docker/` and `*.md/*.sql` are never served; version banners are hidden.
+- Admin sign-up is only open for the very first admin, or to a signed-in admin. **In production create the first admin with `ADMIN_EMAIL` / `ADMIN_PASSWORD`** (the production compose file requires them), otherwise whoever reaches a fresh install first can claim it.
+- SMTP credentials come only from the environment. An old hard-coded Gmail app password remains in the git history of this repository: it **must be revoked** (Google Account > Security > App passwords).
+
+---
+
+## 🏭 Production deployment
+
+```bash
+cp .env.example .env     # set DB_PASSWORD, ADMIN_EMAIL, ADMIN_PASSWORD, SMTP_*, TRUST_PROXY=true, DEMO=false
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+The production override refuses to start with default credentials, drops Linux capabilities, removes Mailpit, forces `DEMO=false` and publishes the app on `127.0.0.1` only. Put a TLS reverse proxy in front of it (nginx, Caddy, Cloudflare Tunnel...) that forwards `X-Forwarded-For` / `X-Forwarded-Proto`, and keep `TRUST_PROXY=true` so HTTPS cookies, HSTS and per-client rate limits work.
+
+Backup and restore:
+
+```bash
+docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup.sql
+docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" "$POSTGRES_DB"' < backup.sql
+```
+
+Existing databases pick up schema changes (such as the `rate_limit` table) automatically: the `seed` service re-applies the idempotent `database/schema.sql` on every start.
+
+---
+
+## 🧪 Testing
+
+`tests/smoke.sh` is a black-box test of a running stack (demo mode): availability, blocked files, security headers, CSRF and authorization checks, and that the login and OTP rate limits hold even when every request uses a fresh session.
+
+```bash
+DEMO=true docker compose up -d --build
+BASE_URL=http://localhost:8080 tests/smoke.sh      # use a fresh database: docker compose down -v
+```
+
+CI (`.github/workflows/ci.yml`) lints every PHP file, validates both compose files, runs the smoke test against a real stack and scans for committed secrets.
+
+---
+
+## ⚠️ Known Limitations
+
+- **No automated unit tests** for the PHP code yet; coverage comes from `tests/smoke.sh` (HTTP level).
+- **No second factor** and no password rules beyond a minimum length of 8.
+- **Legacy hashes:** accounts that still carry an unsalted MD5 password from the very first version are accepted once and upgraded to `password_hash` at their next login.
+- **OTPs live in the browser session**, so a code only works in the browser that requested it.
+- **Rate limits are fixed-window per address / account.** A distributed attacker needs a WAF or reverse-proxy limits on top.
+- **CSP allows `'unsafe-inline'`** for scripts and styles because the pages use inline handlers; it still blocks framing, foreign origins and plugins.
+- **Bundled front-end libraries are old** (jQuery 3.2.1 / 3.3.1, Bootstrap 4.x, Select2) and are not auto-updated; upgrade jQuery to 3.7.x after retesting the wizard and Select2 pages.
+- **Login pages load Nunito from Google Fonts**; self-host it if that third-party request matters to you.
+- **Single node:** PHP sessions are files inside the app container (lost when it is recreated; not shared between replicas). Use a shared session store before scaling out.
+- **No audit log** of who changed what beyond `attendance.marked_by`.
 
 ---
 

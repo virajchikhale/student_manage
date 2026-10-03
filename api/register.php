@@ -35,9 +35,14 @@ $deptId = null;
 $reportTo = null;
 
 if ($role === 'principal') {
+    if (rate_blocked('code_ip', client_ip(), 10, 3600)) {
+        header('Retry-After: 3600');
+        fail('Too many wrong verification codes. Please try again later.', 429);
+    }
     $st = $pdo->prepare('SELECT 1 FROM details WHERE principal_verification = ?');
     $st->execute([post('code')]);
     if (!$st->fetchColumn()) {
+        rate_hit('code_ip', client_ip(), 3600);
         fail('Please enter a valid admin verification code.');
     }
 }

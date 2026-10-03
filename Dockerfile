@@ -10,8 +10,9 @@ RUN apt-get update \
 # Production PHP settings, then the app's own overrides
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/zz-app.ini"
-COPY docker/apache.conf /etc/apache2/conf-available/app.conf
-RUN a2enconf app
+# zz- prefix: must load after Debian's security.conf, which would otherwise reset ServerTokens
+COPY docker/apache.conf /etc/apache2/conf-available/zz-app.conf
+RUN a2enmod headers && a2enconf zz-app
 
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html

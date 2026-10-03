@@ -1,0 +1,33 @@
+# Production overrides. Use together with the base file:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# - refuses to start without a real DB password and first admin (no default credentials)
+# - no Mailpit: set SMTP_* to a real mail server in .env
+# - the app is published on 127.0.0.1 only: put a TLS reverse proxy in front of it and set TRUST_PROXY=true
+# - DEMO must be false (it wipes data on start and prints OTP codes on screen)
+services:
+  app:
+    ports: !override
+      - "127.0.0.1:${APP_PORT:-8080}:80"
+    environment:
+      DEMO: "false"
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_* to your mail server in .env}
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE, SETUID, SETGID, CHOWN, DAC_OVERRIDE]   # Apache binds :80 and drops to www-data
+
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    security_opt: ["no-new-privileges:true"]
+
+  seed:
+    environment:
+      DEMO: "false"
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL (and ADMIN_PASSWORD) so nobody else can claim the first admin sign-up}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD}
+
+  mailpit:
+    profiles: ["dev"]

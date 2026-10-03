@@ -8,3 +8,7 @@ docker-compose.yml
 database
 stop.sh
 *.md
+tests
+.github
+LICENSE
+docker-compose.prod.yml

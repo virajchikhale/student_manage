@@ -172,3 +172,13 @@ INSERT INTO department (name, status) VALUES
   ('Electronics', 0),
   ('Mechanical Engineering', 0)
 ON CONFLICT (name) DO NOTHING;
+
+-- Server-side throttling for login / OTP / verification-code guesses. Keyed by a hash of
+-- (bucket, subject) so no email or IP is stored in clear text. Old rows are pruned on use.
+CREATE TABLE IF NOT EXISTS rate_limit (
+  bucket       VARCHAR(40) NOT NULL,
+  subject      CHAR(64)    NOT NULL,
+  hits         INT         NOT NULL DEFAULT 0,
+  window_start TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (bucket, subject)
+);
