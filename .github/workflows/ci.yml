@@ -1,25 +1,48 @@
 name: ci
-on: [push, pull_request]
-permissions: { contents: read }
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# No paths: filters on purpose. A required check that is skipped never reports,
+# and that would block merging forever.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint:
+  php:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - name: php -l on every PHP file (third-party PHPMailer excluded)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: php -l on every first-party PHP file
         run: |
-          docker run --rm -v "$PWD":/app -w /app php:8.3-cli sh -c \
-            'find . -name "*.php" -not -path "./email/phpmailer/*" -print0 | xargs -0 -n1 php -l >/dev/null'
-      - name: compose files are valid
-        run: |
-          docker compose config -q
-          DB_PASSWORD=x SMTP_HOST=smtp ADMIN_EMAIL=a@b.c ADMIN_PASSWORD=x \
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
+          docker run --rm -v "$PWD":/app:ro -w /app php:8.3-cli sh -c \
+            'find . -name "*.php" -not -path "./vendor/*" -not -path "./email/phpmailer/*" -print0 | xargs -0 -n1 php -l > /dev/null'
+      - run: docker compose config -q
+      - run: DB_PASSWORD=x SMTP_HOST=smtp ADMIN_EMAIL=a@b.c ADMIN_PASSWORD=x docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: docker build -t ci-app .
+
   smoke:
     runs-on: ubuntu-latest
-    env: { DEMO: "true", APP_PORT: "8080" }
+    timeout-minutes: 25
+    env:
+      DEMO: "true"
+      APP_PORT: "8080"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: docker compose up -d --build
       - name: wait for the app to be healthy
         run: |
@@ -27,14 +50,33 @@ jobs:
             [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q app)")" = healthy ] && exit 0
             sleep 3
           done
-          docker compose logs; exit 1
+          docker compose logs
+          exit 1
       - run: BASE_URL=http://localhost:8080 tests/smoke.sh
       - if: failure()
         run: docker compose logs --no-color | tail -100
+
   secrets:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: gitleaks/gitleaks-action@v2
-        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # The single check to require in branch protection. Job renames above never break it.
+  ci-gate:
+    if: always()
+    needs: [php, docker, smoke, secrets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS"
+          echo "$NEEDS" | jq -e 'all(.[]; .result == "success")' > /dev/null
